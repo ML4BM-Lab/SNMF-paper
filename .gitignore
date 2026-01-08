@@ -1,0 +1,14 @@
+.venv
+data
+*.sif
+**/logs/
+*.out
+
+experiment
+results
+
+repo
+
+__pycache__
+
+NMF_*
