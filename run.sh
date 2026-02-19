@@ -51,9 +51,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate required args
-if [ -z "$DATA_PATH" ] || [ -z "$MARKERS_PATH" ] || [ -z "$OUTPUT_PATH" ] || [ -z "$K" ] || [ -z "$PROPORTIONS_PATH" ]; then
+if [ -z "$DATA_PATH" ] || [ -z "$MARKERS_PATH" ] || [ -z "$OUTPUT_PATH" ] || [ -z "$K" ]; then
   echo "Error: Missing required arguments."
-  echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT --proportions_path=FILE [--starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-ssed=SEED]"
+  echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT [--starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-ssed=SEED]"
   exit 1
 fi
 
@@ -115,7 +115,7 @@ sleep 10
       "$MARKERS_PATH" \
       "$OUTPUT_PATH/STdeconvolve/" \
       $K \
-      "$HUNGARIAN" \
+      "false" \
       $SEED
 ) > "$OUTPUT_PATH/logs/STdeconvolve.log" 2>&1 &
 
@@ -219,14 +219,16 @@ if [[ "$HUNGARIAN" == "true" ]]; then
 fi
 
 # Plot results
-source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-mkdir -p "$OUTPUT_PATH/plots"
-python /scratch/lalonsoeste/PhD/NMF_deconvolution/analysis/plot_metrics.py \
-    "$OUTPUT_PATH" \
-    "$PROPORTIONS_PATH" \
-    "$HUNGARIAN"
+if [ ! -z "$PROPORTIONS_PATH" ]; then
+  source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
+  mkdir -p "$OUTPUT_PATH/plots"
+  python /scratch/lalonsoeste/PhD/NMF_deconvolution/analysis/plot_metrics.py \
+      "$OUTPUT_PATH" \
+      "$PROPORTIONS_PATH" \
+      "$HUNGARIAN"
 
-python /scratch/lalonsoeste/PhD/NMF_deconvolution/analysis/plot_proportions.py \
-    "$OUTPUT_PATH" \
-    "$PROPORTIONS_PATH" \
-    "$HUNGARIAN"
+  python /scratch/lalonsoeste/PhD/NMF_deconvolution/analysis/plot_proportions.py \
+      "$OUTPUT_PATH" \
+      "$PROPORTIONS_PATH" \
+      "$HUNGARIAN"
+fi

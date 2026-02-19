@@ -28,10 +28,6 @@ if [ -z "$PROBS" ]; then
 fi
 
 PROPORTIONS_PATH=$6
-if [ -z "$PROPORTIONS_PATH" ]; then
-    echo "o"
-    exit 1
-fi
 
 SEED=$7
 if [ -z "$SEED" ]; then
@@ -65,9 +61,11 @@ echo "Deconvolution started..."
 jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $K $THETA $PROBS $SEED)
 echo "Deconvolution finished!"
 
-echo "Annotation started..."
-Rscript ./annotate.R $OUTPUT_PATH $PROPORTIONS_PATH
-echo "Annotation finished!"
+if [ ! -z "$PROPORTIONS_PATH" ]; then
+    echo "Annotation started..."
+    Rscript ./annotate.R $OUTPUT_PATH $PROPORTIONS_PATH
+    echo "Annotation finished!"
+fi
 
 sacct -j $jid1 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/preprocessing_sacct.log
 sacct -j $jid2 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/sacct.log
