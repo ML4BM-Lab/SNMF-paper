@@ -12,17 +12,22 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-K=$3
+VISIUM=$3
+if [ -z "$VISIUM" ]; then
+    exit 1
+fi
+
+K=$4
 if [ -z "$K" ]; then
     exit 1
 fi
 
-RHO=$4
+RHO=$5
 if [ -z "$RHO" ]; then
     exit 1
 fi
 
-SEED=$5
+SEED=$6
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -37,7 +42,7 @@ while true; do
     TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
     if (( TEST_JOBS < MAX_TEST_JOBS )); then
       echo "Loading data..."
-      jid1=$(sbatch --parsable --wait ./load_data.slurm $DATA_PATH $OUTPUT_PATH)
+      jid1=$(sbatch --parsable --wait ./load_data.slurm $DATA_PATH $OUTPUT_PATH $VISIUM)
       echo "Data loaded!"
       break
     else

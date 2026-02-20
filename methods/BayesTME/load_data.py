@@ -9,9 +9,9 @@ import numpy as np
 import os
 import pickle
 
-
 data_path = sys.argv[1]
 output_path = sys.argv[2]
+visium = sys.argv[3] == "true"
 
 counts = pd.read_csv(data_path, index_col=0)
 adata = sc.AnnData(
@@ -19,6 +19,7 @@ adata = sc.AnnData(
     obs=pd.DataFrame(index=counts.columns),  # rows are observations
     var=pd.DataFrame(index=counts.index)     # rows are variables
 )
+
 adata.obs[["array_row", "array_col"]] = adata.obs_names.str.split("x").tolist()
 
 count_mat = adata.X
@@ -35,21 +36,35 @@ edges = []
 # Build a quick lookup from (row, col) → index
 spot_to_idx = {(r, c): i for i, (r, c) in enumerate(zip(rows, cols))}
 
+def get_neighbors(r,c):
+    if visium:
+        return [
+            (r - 2, c),  # up
+            (r - 1, c - 1),
+            (r, c - 2),  # left
+            (r + 1, c - 1),
+            (r + 2, c),  # down
+            (r + 1, c + 1),
+            (r, c + 2),  # right
+            (r - 1, c + 1),
+        ]
+    else:
+        return [
+            (r - 1, c),  # up
+            (r + 1, c),  # down
+            (r, c - 1),  # left
+            (r, c + 1),  # right
+        ]
+
 # Iterate through each spot
 for i, (r, c) in enumerate(zip(rows, cols)):
     # Check all possible immediate neighbors (4-connected grid)
-    neighbors = [
-        (r - 1, c),  # up
-        (r + 1, c),  # down
-        (r, c - 1),  # left
-        (r, c + 1),  # right
-    ]
+    neighbors = get_neighbors(r,c)
     for nb in neighbors:
         if nb in spot_to_idx:  # if neighbor exists in dataset
             edges.append([i, spot_to_idx[nb]])
 
 edges = np.array(edges, dtype=int)
-
 
 stdata = data.create_anndata_object(counts=count_mat, 
                                     edges=edges,

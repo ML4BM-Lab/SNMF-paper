@@ -32,6 +32,7 @@ for folder in "$base_dir"/*; do
             --data_path="$counts_path" \
             --markers_path="$markers_path" \
             --output_path="/scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/results/${sample}" \
+            --visium=true \
             --k="$k" \
             --starfysh_lr="1e-6" \
             --hungarian=false &
@@ -45,3 +46,17 @@ done
 wait
 
 echo "🎉 All samples processed."
+
+source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
+for folder in "$base_dir"/*; do
+    if [ -d "$folder" ]; then
+        sample=$(basename "$folder")
+        echo "🚀 Analyzing results for $sample"
+
+        python /scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/annotate.py \
+            "${folder}/filtered_feature_bc_matrix.h5ad" \
+            "/scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/results/${sample}"
+    fi
+done
+
+echo "🎉 Analysis completed."

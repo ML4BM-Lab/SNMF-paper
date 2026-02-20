@@ -4,7 +4,7 @@
 #SBATCH --qos=regular
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=00:30:00
+#SBATCH --time=01:00:00
 
 OUTPUT_PATH=$1
 if [ -z "$OUTPUT_PATH" ]; then

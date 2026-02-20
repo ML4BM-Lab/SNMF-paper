@@ -5,7 +5,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --gres=gpu:1
-#SBATCH --time=00:05:00
+#SBATCH --time=00:30:00
 
 OUTPUT_PATH=$1
 if [ -z "$OUTPUT_PATH" ]; then

@@ -25,6 +25,6 @@ fi
 # Load environment
 source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
 
-# Run the R script
+# Run the python script
 python ./run_starfysh.py $OUTPUT_PATH $LEARNING_RATE $SEED
 

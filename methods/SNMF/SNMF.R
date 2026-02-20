@@ -15,12 +15,12 @@ load(paste0(output_path, "tmp/S.RData"))
 
 source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/NMFKLMixing.R")
 
-counts <- gpu.matrix(counts, dtype = "float32")
+gpu_counts <- gpu.matrix(counts, dtype = "float32")
 S <- gpu.matrix(S, dtype = "float32")
 
 set.seed(seed)
 
-output <- NMFKLMixing(counts, S = S, k = k,
+output <- NMFKLMixing(gpu_counts, S = S, k = k,
                       niter = 2000, tol = 1e-4, num_initializations=num_initializations)
 
 W <- as.matrix(output$W)
@@ -39,3 +39,12 @@ HC <- t(t(HC)/colSums(HC))
 
 save(W, file=paste0(output_path, "tmp/W.RData"))
 save(HC, file=paste0(output_path, "tmp/raw_proportions.RData"))
+
+# Name spots and genes
+colnames(HC) <- colnames(counts)
+HC <- t(HC)
+
+rownames(W) <- rownames(counts)
+
+write.csv(W, paste0(output_path, "signatures.csv"))
+write.csv(HC, paste0(output_path, "SNMF_proportions.csv"))

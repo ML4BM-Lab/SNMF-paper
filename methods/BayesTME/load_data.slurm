@@ -16,8 +16,13 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
+VISIUM=$3
+if [ -z "$VISIUM" ]; then
+    exit 1
+fi
+
 # Load environment
 source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
 
 # Run the R script
-python ./load_data.py $DATA_PATH $OUTPUT_PATH
+python ./load_data.py $DATA_PATH $OUTPUT_PATH $VISIUM

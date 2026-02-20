@@ -5,9 +5,10 @@ set -euo pipefail
 DATA_PATH=""
 MARKERS_PATH=""
 OUTPUT_PATH=""
+VISIUM=false
 K=""
 PROPORTIONS_PATH=""
-STARFYSH_LR="1e-5"
+STARFYSH_LR="1e-6"
 HUNGARIAN=false
 SEED=42
 
@@ -22,6 +23,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --output_path=*)
       OUTPUT_PATH="${1#*=}"
+      ;;
+    --visium=*)
+      VISIUM="${1#*=}"
       ;;
     --k=*)
       K="${1#*=}"
@@ -39,7 +43,7 @@ while [[ $# -gt 0 ]]; do
       SEED="${1#*=}"
       ;;
     --help|-h)
-      echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT --proportions_path=FILE [--starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-seed=SEED]"
+      echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT [--proportions_path=FILE] [--visium=true|false] --starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-seed=SEED]"
       exit 0
       ;;
     *)
@@ -115,7 +119,7 @@ sleep 10
       "$MARKERS_PATH" \
       "$OUTPUT_PATH/STdeconvolve/" \
       $K \
-      "false" \
+      true \
       $SEED
 ) > "$OUTPUT_PATH/logs/STdeconvolve.log" 2>&1 &
 
@@ -168,6 +172,7 @@ sleep 10
   bash run.sh \
       "$DATA_PATH" \
       "$OUTPUT_PATH/BayesTME/" \
+      "$VISIUM" \
       $K \
       0.5 \
       $SEED
