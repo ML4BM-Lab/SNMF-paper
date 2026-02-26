@@ -2,9 +2,16 @@
 
 base_dir="/scratch/lalonsoeste/PhD/SpatialTranscriptomics/data/spatial/10x/Visium/DLPFC"
 
+samples=("151671" "151672")
+
 for folder in "$base_dir"/*; do
     if [ -d "$folder" ]; then
         sample=$(basename "$folder")
+
+        if [[ ! " ${samples[@]} " =~ " ${sample} " ]]; then
+            echo "⏭ Skipping $sample (not in subset)"
+            continue
+        fi
 
         counts_path="${folder}/counts.csv"
         markers_path="${folder}/marker_genes.csv"
@@ -51,6 +58,12 @@ source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
 for folder in "$base_dir"/*; do
     if [ -d "$folder" ]; then
         sample=$(basename "$folder")
+        
+        if [[ ! " ${samples[@]} " =~ " ${sample} " ]]; then
+            echo "⏭ Skipping $sample (not in subset)"
+            continue
+        fi
+
         echo "🚀 Analyzing results for $sample"
 
         python /scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/annotate.py \

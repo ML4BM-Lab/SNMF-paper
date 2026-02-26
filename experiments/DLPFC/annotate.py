@@ -1,11 +1,15 @@
 import sys
 import os
-import itertools
 
 import scanpy as sc
 import pandas as pd
 
+from sklearn.metrics import confusion_matrix
+from scipy.optimize import linear_sum_assignment
+import numpy as np
+
 from sklearn.metrics import adjusted_rand_score
+
 
 data_path = sys.argv[1]
 results_path = sys.argv[2]
@@ -44,8 +48,6 @@ for (dirpath, dirnames, filenames) in os.walk(results_path):
             mapping = major_ct.to_dict()
             adata.obs[f"{method}_major_ct"] = adata.obs["rowcol"].map(mapping)
 
-            # adata.obs[f"{method}_major_ct"] = adata.obs[f"{method}_major_ct"].astype("category")
-
             methods.append(method)
 
 methods = list(set(methods))  # remove duplicates
@@ -60,28 +62,86 @@ os.makedirs(plots_dir, exist_ok=True)
 
 # Ground truth
 adata.obs["Region"] = adata.obs["Region"].astype("category")
-sc.pl.spatial(
+ax = sc.pl.spatial(
     adata,
     color="Region",
     show=False,
-    title="Ground truth"
+    frameon=False,
+    na_in_legend=False,
+    palette="tab20",
+    title="",
 )
+ax[0].set_xlabel("")
+ax[0].set_ylabel("")
+
 plt.savefig(os.path.join(plots_dir, "ground_truth.png"),
             dpi=300,
             bbox_inches="tight")
 plt.close()
 
-# Methods
+# Store ground-truth color mapping
+gt_categories = adata.obs["Region"].cat.categories
+gt_colors = dict(zip(gt_categories, adata.uns["Region_colors"]))
+
 for method in methods:
-    sc.pl.spatial(
-        adata,
-        color=f"{method}_major_ct",
-        show=False,
-        title=method
+
+    pred_key = f"{method}_major_ct"
+    
+    # Remove NA
+    mask = adata.obs[pred_key].notna()
+    y_true = adata.obs.loc[mask, "Region"].astype(str)
+    y_pred = adata.obs.loc[mask, pred_key].astype(str)
+
+    # Build confusion matrix
+    true_labels = np.unique(y_true)
+    pred_labels = np.unique(y_pred)
+
+    cm = confusion_matrix(y_true, y_pred, labels=true_labels)
+
+    # Hungarian matching (maximize overlap)
+    row_ind, col_ind = linear_sum_assignment(-cm)
+
+    # Create mapping
+    mapping = {
+        pred_labels[j]: true_labels[i]
+        for i, j in zip(row_ind, col_ind)
+        if j < len(pred_labels)
+    }
+
+    # Apply remapping
+    remapped = adata.obs[pred_key].map(mapping)
+    adata.obs[f"{method}_aligned"] = remapped.astype("category")
+
+    # Force same category order as ground truth
+    adata.obs[f"{method}_aligned"] = (
+        adata.obs[f"{method}_aligned"]
+        .cat.set_categories(gt_categories)
     )
-    plt.savefig(os.path.join(plots_dir, f"{method}.png"),
-                dpi=300,
-                bbox_inches="tight")
+
+    # Assign same colors
+    adata.uns[f"{method}_aligned_colors"] = [
+        gt_colors[c] for c in gt_categories
+    ]
+
+    # Plot
+    ax = sc.pl.spatial(
+        adata,
+        color=f"{method}_aligned",
+        show=False,
+        frameon=False,
+        na_in_legend=False,
+        legend_loc="none",
+        title=""
+    )
+
+    ax[0].set_xlabel("")
+    ax[0].set_ylabel("")
+
+    plt.savefig(
+        os.path.join(plots_dir, f"{method}.png"),
+        dpi=300,
+        bbox_inches="tight"
+    )
     plt.close()
 
 # -------------------------------------------------
@@ -100,39 +160,15 @@ for method in methods:
     y_true = true_labels[mask]
     y_pred = pred_labels[mask]
 
-    # Case 1: labels already match reference vocabulary
-    if set(y_pred.unique()).issubset(set(y_true.unique())):
-        ari = adjusted_rand_score(y_true, y_pred)
-        aris[method] = ari
-
-    # Case 2: labels don't match → try all permutations
-    else:
-        unique_pred = y_pred.unique()
-        unique_true = y_true.unique()
-
-        best_ari = -1
-
-        # Only permute if number of clusters matches
-        if len(unique_pred) == len(unique_true):
-
-            for perm in itertools.permutations(unique_true):
-                mapping = dict(zip(unique_pred, perm))
-                mapped_pred = y_pred.map(mapping)
-
-                ari = adjusted_rand_score(y_true, mapped_pred)
-
-                if ari > best_ari:
-                    best_ari = ari
-
-            aris[method] = best_ari
-
-        else:
-            # Direct ARI (label names don't matter mathematically)
-            aris[method] = adjusted_rand_score(y_true, y_pred)
+    # Direct ARI (label names don't matter mathematically)
+    aris[method] = adjusted_rand_score(y_true, y_pred)
 
 # -------------------------------------------------
-# Print results
+# Print and save results
 # -------------------------------------------------
-print("Adjusted Rand Index per method:")
-for k, v in aris.items():
-    print(f"{k}: {v:.4f}")
+with open(os.path.join(results_path, "ari.txt"), 'w') as f:
+    f.write("Adjusted Rand Index per method:\n")
+    for k, v in aris.items():
+        line = f"{k}: {v:.4f}\n"
+        print(line.strip())
+        f.write(line)

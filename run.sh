@@ -94,22 +94,6 @@ sleep 10 # This avoids 'sbatch: error: Batch job submission failed: Socket timed
 
 sleep 10
 
-## SNMF v2 (ours)
-# (
-#   cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/v2
-#   mkdir -p "$OUTPUT_PATH/SNMF_v2/"
-#   bash run.sh \
-#       "$DATA_PATH" \
-#       "$OUTPUT_PATH/SNMF_v2/" \
-#       $K \
-#       0.4 \
-#       0.75 \
-#       "$PROPORTIONS_PATH" \
-#       $SEED
-# ) > "$OUTPUT_PATH/logs/SNMF_v2.log" 2>&1 &
-
-# sleep 10
-
 ## STdeconvolve 
 (
   cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/STdeconvolve

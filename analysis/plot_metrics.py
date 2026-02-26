@@ -9,7 +9,16 @@ from scipy.stats import ttest_ind
 
 # === Configuration ===
 MEM_CONVERSION = {'T': 2, 'G': 1, 'M': 0, 'K': -1}
-METHOD_ORDER = ["SMART", "STdeconvolve", "starfysh", "CARD", "RETROFIT", "BayesTME", "SpiceMix", "SNMF", "SNMF_v2"]
+METHOD_ORDER = [
+    "SNMF",
+    "STdeconvolve",
+    "SpiceMix",
+    "CARD",
+    "SMART",
+    "RETROFIT",
+    "starfysh",
+    "BayesTME"
+]
 
 # Global seaborn style with fine-tuned fonts
 sns.set_theme(style="whitegrid")
@@ -142,6 +151,7 @@ def plot_bar(data, y_label, title, filename, log_scale=False):
     sns.despine()
     plt.tight_layout()
     plt.savefig(os.path.join(folder, "plots", filename), dpi=300)
+    plt.savefig(os.path.join(folder, "plots", f"{filename.split('.')[0]}.pdf"), dpi=300)
     plt.close()
 
 
@@ -184,6 +194,7 @@ def plot_rmse(metrics):
     sns.despine()
     plt.tight_layout()
     plt.savefig(os.path.join(folder, "plots", "rmse_comparison.png"), dpi=300)
+    plt.savefig(os.path.join(folder, "plots", "rmse_comparison.pdf"), dpi=300)
     plt.close()
 
 
@@ -191,6 +202,8 @@ def plot_metrics(metrics):
     global folder
     os.makedirs(os.path.join(folder, "plots"), exist_ok=True)
     methods_present = [m for m in METHOD_ORDER if m in metrics]
+    print(methods_present)
+    print([metrics[m]['time'] for m in methods_present])
     time_data = pd.DataFrame([
         {"Method": m, "Time (s)": np.nanmean(metrics[m]['time'])} for m in methods_present
     ])

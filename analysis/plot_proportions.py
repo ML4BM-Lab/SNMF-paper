@@ -9,7 +9,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # === Configuration ===
-METHOD_ORDER = ["SMART", "STdeconvolve", "starfysh", "CARD", "RETROFIT", "BayesTME", "SpiceMix", "SNMF", "SNMF_v2"]
+METHOD_ORDER = [
+    "SNMF",
+    "STdeconvolve",
+    "SpiceMix",
+    "CARD",
+    "SMART",
+    "RETROFIT",
+    "starfysh",
+    "BayesTME"
+]
 
 # Global seaborn style with fine-tuned fonts
 sns.set_theme(style="whitegrid")
@@ -18,7 +27,7 @@ sns.set_context("talk", font_scale=1.1, rc={
     "axes.labelsize": 15,
     "xtick.labelsize": 12,
     "ytick.labelsize": 12,
-    "legend.fontsize": 12,
+    "legend.fontsize": 8,
     "axes.linewidth": 1.2,
     "grid.linewidth": 0.6
 })
@@ -67,10 +76,10 @@ def plot_proportions(csv_files, normalize=False):
     nrow = total_panels
     ncol = n_colors
 
-    fig, axes = plt.subplots(
+    _, axes = plt.subplots(
         nrow,
         ncol,
-        figsize=(3.0 * ncol, 3.0 * nrow),
+        figsize=(3.0 * ncol if normalize else 4 * ncol, 3.0 * nrow),
         sharex=True,
         sharey=True,
         gridspec_kw=dict(wspace=0.05, hspace=0.05)
@@ -97,7 +106,7 @@ def plot_proportions(csv_files, normalize=False):
     # === Row 0: Ground Truth ===
     for j, color in enumerate(ground_truth.var_names):
         ax = axes[0, j]
-        sc.pl.spatial(ground_truth, color=color, spot_size=1.2, ax=ax, show=False,
+        sc.pl.spatial(ground_truth, color=color, spot_size=1.0, ax=ax, show=False,
                           vmin=limits[color][0] if normalize else None,
                           vmax=limits[color][1] if normalize else None, 
                           colorbar_loc=None if normalize else 'right')
@@ -110,12 +119,20 @@ def plot_proportions(csv_files, normalize=False):
         if j == 0:
             ax.set_ylabel("Ground Truth", fontsize=13, rotation=0, labelpad=40, va="center")
 
+        if not normalize:
+            cbar_ax = ax.figure.axes[-1]
+            cbar_ax.tick_params(
+                labelsize=8,     
+                width=0.5,       # thinner tick lines (default ~1–1.5)
+                length=3         # shorter ticks (optional)
+            )
+
     # === Remaining rows: methods ===
     for i, method in enumerate(available_methods, start=1):
         proportions = process_proportions(sc.read_csv(csv_files[method]))
         for j, color in enumerate(proportions.var_names):
             ax = axes[i, j]
-            sc.pl.spatial(proportions, color=color, spot_size=1.2, ax=ax, show=False,
+            sc.pl.spatial(proportions, color=color, spot_size=1.0, ax=ax, show=False,
                           vmin=limits[color][0] if normalize else None,
                           vmax=limits[color][1] if normalize else None, 
                           colorbar_loc=None if normalize else 'right')
@@ -129,8 +146,17 @@ def plot_proportions(csv_files, normalize=False):
             if j == 0:
                 ax.set_ylabel(method, fontsize=13, rotation=0, labelpad=40, va="center")
 
-    plt.tight_layout(pad=0.8, w_pad=0.2, h_pad=0.2)
+            if not normalize:
+                cbar_ax = ax.figure.axes[-1]
+                cbar_ax.tick_params(
+                    labelsize=8,     
+                    width=0.5,       # thinner tick lines (default ~1–1.5)
+                    length=3         # shorter ticks (optional)
+                )
+
+    # plt.tight_layout(pad=0.8, w_pad=0.2, h_pad=0.2)
     plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.png"), dpi=300, bbox_inches="tight")
+    plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.pdf"), dpi=300, bbox_inches="tight")
     plt.close()
     
 def main():
@@ -150,7 +176,7 @@ def main():
         sys.exit(0)
 
     plot_proportions(csv_files)
-    plot_proportions(csv_files, normalize=True)
+    # plot_proportions(csv_files, normalize=True)
     print("✅ Plots saved in 'plots/' folder.")
 
 
