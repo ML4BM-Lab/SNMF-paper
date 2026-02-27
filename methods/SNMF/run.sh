@@ -12,24 +12,29 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-K=$3
+GAMMA=$3
+if [ -z "$GAMMA" ]; then
+    exit 1
+fi
+
+K=$4
 if [ -z "$K" ]; then
     exit 1
 fi
 
-NUM_INITIALIZATIONS=$4
+NUM_INITIALIZATIONS=$5
 if [ -z "$NUM_INITIALIZATIONS" ]; then
     exit 1
 fi
 
-PROBS=$5
+PROBS=$6
 if [ -z "$PROBS" ]; then
     exit 1
 fi
 
-PROPORTIONS_PATH=$6
+PROPORTIONS_PATH=$7
 
-SEED=$7
+SEED=$8
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -48,7 +53,7 @@ while true; do
     TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
     if (( TEST_JOBS < MAX_TEST_JOBS )); then
       echo "Loading data..."
-      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH)
+      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $GAMMA)
       echo "Data loaded!"
       break
     else

@@ -2,16 +2,9 @@
 
 base_dir="/scratch/lalonsoeste/PhD/SpatialTranscriptomics/data/spatial/10x/Visium/DLPFC"
 
-samples=("151671" "151672")
-
 for folder in "$base_dir"/*; do
     if [ -d "$folder" ]; then
         sample=$(basename "$folder")
-
-        if [[ ! " ${samples[@]} " =~ " ${sample} " ]]; then
-            echo "⏭ Skipping $sample (not in subset)"
-            continue
-        fi
 
         counts_path="${folder}/counts.csv"
         markers_path="${folder}/marker_genes.csv"
@@ -25,7 +18,7 @@ for folder in "$base_dir"/*; do
             echo "   → Running process_data.py"
 
             source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-            python /scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/process_data.py "$folder"
+            python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/DLPFC/process_data.py "$folder"
 
             echo "✅ Data generated for $sample"
         fi
@@ -38,7 +31,7 @@ for folder in "$base_dir"/*; do
         bash /scratch/lalonsoeste/PhD/NMF_deconvolution/run.sh \
             --data_path="$counts_path" \
             --markers_path="$markers_path" \
-            --output_path="/scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/results/${sample}" \
+            --output_path="/scratch/lalonsoeste/PhD/NMF_deconvolution/benchmarking/DLPFC/results/${sample}" \
             --visium=true \
             --k="$k" \
             --starfysh_lr="1e-6" \
@@ -58,17 +51,12 @@ source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
 for folder in "$base_dir"/*; do
     if [ -d "$folder" ]; then
         sample=$(basename "$folder")
-        
-        if [[ ! " ${samples[@]} " =~ " ${sample} " ]]; then
-            echo "⏭ Skipping $sample (not in subset)"
-            continue
-        fi
 
         echo "🚀 Analyzing results for $sample"
 
-        python /scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/annotate.py \
+        python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/DLPFC/annotate.py \
             "${folder}/filtered_feature_bc_matrix.h5ad" \
-            "/scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/DLPFC/results/${sample}"
+            "/scratch/lalonsoeste/PhD/NMF_deconvolution/benchmarking/DLPFC/results/${sample}"
     fi
 done
 

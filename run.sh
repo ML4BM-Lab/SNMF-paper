@@ -8,6 +8,7 @@ OUTPUT_PATH=""
 VISIUM=false
 K=""
 PROPORTIONS_PATH=""
+SNMF_GAMMA="1.5"
 STARFYSH_LR="1e-6"
 HUNGARIAN=false
 SEED=42
@@ -32,6 +33,9 @@ while [[ $# -gt 0 ]]; do
       ;;
     --proportions_path=*)
       PROPORTIONS_PATH="${1#*=}"
+      ;;
+    --snmf_gamma=*)
+      SNMF_GAMMA="${1#*=}"
       ;;
     --hungarian=*)
       HUNGARIAN="${1#*=}"
@@ -85,6 +89,7 @@ sleep 10 # This avoids 'sbatch: error: Batch job submission failed: Socket timed
   bash run.sh \
       "$DATA_PATH" \
       "$OUTPUT_PATH/SNMF/" \
+      "$SNMF_GAMMA" \
       $K \
       10 \
       0.75 \

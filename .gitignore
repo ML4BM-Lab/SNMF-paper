@@ -1,14 +1,30 @@
 .venv
 data
-*.sif
-**/logs/
-*.out
 
-experiment
-results
+*.sif
+
+*.csv
+
+**/logs/
+*.log
+*.out
+*.txt
+*.tex
+
+*.png
+*.pdf
+*.svg
+
+*.RData
+*.rds
+*.RDS
+
+*.pickle
+*.h5
 
 repo
 
 __pycache__
+.ipynb_checkpoints
 
 NMF_*

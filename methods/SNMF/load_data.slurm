@@ -16,9 +16,14 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
+GAMMA=$3
+if [ -z "$GAMMA" ]; then
+    exit 1
+fi
+
 # Load R
 module purge
 module load R/4.4.1-gfbf-2023a
 
 # Run the R script
-Rscript ./load_data.R $DATA_PATH $OUTPUT_PATH
+Rscript ./load_data.R $DATA_PATH $OUTPUT_PATH $GAMMA

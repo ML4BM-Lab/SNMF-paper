@@ -5,6 +5,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if(length(args) == 0) stop("Please provide the data directory path")
 data_path <- args[1]
 output_path <- args[2]
+gamma <- as.numeric(args[3])
 
 counts <- read.csv(data_path, row.names=1, check.names=FALSE)
 
@@ -16,7 +17,7 @@ positions <- matrix(as.numeric(unlist(strsplit(colnames(counts), "x"))),
                 ncol=2, byrow = TRUE)
 x <- positions[,1]
 y <- positions[,2]
-gamma <- 1.5
+
 S <- exp(-gamma * as.matrix(dist(cbind(x,y)))^2)
 S[S < 1e-3] <- 0 
 
