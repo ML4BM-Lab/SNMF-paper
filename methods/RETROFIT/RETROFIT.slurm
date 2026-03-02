@@ -11,7 +11,12 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-SEED=$2
+K=$2
+if [ -z "$K" ]; then
+    exit 1
+fi
+
+SEED=$3
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -21,5 +26,5 @@ module purge
 module load R/4.4.1-gfbf-2023a
 
 # Run the R script
-Rscript ./RETROFIT.R $OUTPUT_PATH $SEED
+Rscript ./RETROFIT.R $OUTPUT_PATH $K $SEED
 

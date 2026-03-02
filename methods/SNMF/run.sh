@@ -12,8 +12,8 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-GAMMA=$3
-if [ -z "$GAMMA" ]; then
+VALUE=$3
+if [ -z "$VALUE" ]; then
     exit 1
 fi
 
@@ -53,7 +53,7 @@ while true; do
     TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
     if (( TEST_JOBS < MAX_TEST_JOBS )); then
       echo "Loading data..."
-      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $GAMMA)
+      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $VALUE)
       echo "Data loaded!"
       break
     else

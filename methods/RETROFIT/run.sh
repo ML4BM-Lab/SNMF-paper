@@ -7,17 +7,22 @@ if [ -z "$DATA_PATH" ]; then
     exit 1
 fi
 
-MARKERS_PATH=$2
+K=$2
+if [ -z "$K" ]; then
+    exit 1
+fi
+
+MARKERS_PATH=$3
 if [ -z "$MARKERS_PATH" ]; then
     exit 1
 fi
 
-OUTPUT_PATH=$3
+OUTPUT_PATH=$4
 if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-SEED=$4
+SEED=$5
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -46,7 +51,7 @@ while true; do
 done
 
 echo "Deconvolution started..."
-jid2=$(sbatch --parsable --wait ./RETROFIT.slurm $OUTPUT_PATH $SEED)
+jid2=$(sbatch --parsable --wait ./RETROFIT.slurm $OUTPUT_PATH $K $SEED)
 echo "Deconvolution finished!"
 
 echo "Annotating results..."

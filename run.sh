@@ -8,7 +8,7 @@ OUTPUT_PATH=""
 VISIUM=false
 K=""
 PROPORTIONS_PATH=""
-SNMF_GAMMA="1.5"
+SNMF_VALUE="0.5"
 STARFYSH_LR="1e-6"
 HUNGARIAN=false
 SEED=42
@@ -34,8 +34,8 @@ while [[ $# -gt 0 ]]; do
     --proportions_path=*)
       PROPORTIONS_PATH="${1#*=}"
       ;;
-    --snmf_gamma=*)
-      SNMF_GAMMA="${1#*=}"
+    --snmf_value=*)
+      SNMF_VALUE="${1#*=}"
       ;;
     --hungarian=*)
       HUNGARIAN="${1#*=}"
@@ -69,12 +69,13 @@ fi
 cd "/scratch/lalonsoeste/PhD/NMF_deconvolution/"
 mkdir -p "$OUTPUT_PATH/logs"
 
-## retrofit
+## RETROFIT
 (
   cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/RETROFIT
   mkdir -p "$OUTPUT_PATH/RETROFIT/"
   bash run.sh \
       "$DATA_PATH" \
+      "$K" \
       "$MARKERS_PATH" \
       "$OUTPUT_PATH/RETROFIT/" \
       $SEED
@@ -89,7 +90,7 @@ sleep 10 # This avoids 'sbatch: error: Batch job submission failed: Socket timed
   bash run.sh \
       "$DATA_PATH" \
       "$OUTPUT_PATH/SNMF/" \
-      "$SNMF_GAMMA" \
+      "$SNMF_VALUE" \
       $K \
       10 \
       0.75 \
@@ -113,19 +114,6 @@ sleep 10
 ) > "$OUTPUT_PATH/logs/STdeconvolve.log" 2>&1 &
 
 sleep 10
-
-## UniCell Deconvolve
-# (
-#     cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/UniCell
-#     mkdir -p "$OUTPUT_PATH/ucd/"
-#     bash run.sh \
-#         "$DATA_PATH" \
-#         "$MARKERS_PATH" \
-#         "$OUTPUT_PATH/ucd/" \
-#         $SEED
-# ) > "$OUTPUT_PATH/logs/ucd.log" 2>&1 &
-
-# sleep 10
 
 ## SMART
 (

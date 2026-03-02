@@ -5,6 +5,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --gres=gpu:1
+#SBATCH --constraint=rtx3090
 #SBATCH --time=07:00:00
 
 OUTPUT_PATH=$1

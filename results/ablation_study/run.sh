@@ -1,29 +1,42 @@
 #/bin/bash
 
-DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/counts.csv"
-OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/TNBC"
-K="5"
-PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/proportions.csv"
+# DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/counts.csv"
+# OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/TNBC"
+# K="5"
+# PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/proportions.csv"
+
+DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/scDesign3/PDAC/counts/mixture_file.csv"
+OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/PDAC"
+K="20"
+PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/scDesign3/PDAC/counts/proportions.csv"
+
 SEED=42
 
-gammas=(1 2 3 4 5 6 7)
+values=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0)
 
-for gamma in "${gammas[@]}"
+for val in "${values[@]}"
 do
   (
     cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF
-    mkdir -p "$OUTPUT_PATH/gamma_$gamma/"
+    mkdir -p "$OUTPUT_PATH/v$val/"
     bash run.sh \
         "$DATA_PATH" \
-        "$OUTPUT_PATH/gamma_$gamma/" \
-        "$gamma" \
+        "$OUTPUT_PATH/v$val/" \
+        "$val" \
         "$K" \
         10 \
         0.75 \
         "$PROPORTIONS_PATH" \
         "$SEED"
-  ) > "$OUTPUT_PATH/logs/SNMF_gamma_${gamma}.log" 2>&1 &
+  ) > "$OUTPUT_PATH/logs/SNMF_v${val}.log" 2>&1 &
 
   sleep 10
 done
+
+wait
+
+source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/plot_metrics.py \
+  "$OUTPUT_PATH" \
+  "$PROPORTIONS_PATH"
 
