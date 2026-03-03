@@ -1,20 +1,14 @@
 # SNMF: Ultrafast, Spatially-Aware Deconvolution for Spatial Transcriptomics
 
+<p align="center">
+  <img src="assets/GrpahicalAbstract.pdf" width="900">
+</p>
+
 **SNMF (Spatial Non-negative Matrix Factorization)** is a rapid, accurate, and reference-free deconvolution method for sequencing-based spatial transcriptomics data. It extends classical NMF with explicit spatial modeling and is the first spatial transcriptomics deconvolution tool to natively support GPU acceleration, while providing a seamless CPU fallback.
 
 This repository contains the official implementation accompanying the paper:
 
 > **SNMF: Ultrafast, Spatially-Aware Deconvolution for Spatial Transcriptomics**
-
----
-
-## Abstract
-
-Sequencing-based spatial transcriptomics has revolutionized the study of tissue architecture, but its *spots* often contain multiple cells, creating a key computational challenge: deconvolution. Existing reference-free methods typically neglect the spatial correlation between neighboring spots and do not leverage modern hardware for efficient computation.
-
-We propose **SNMF (Spatial Non-negative Matrix Factorization)**: a rapid, accurate, and reference-free deconvolution method. SNMF extends the standard NMF framework with a **spatial mixing matrix** that models neighborhood influences, guiding the factorization toward spatially coherent solutions.
-
-Our R package is, to our knowledge, the first spatial transcriptomics deconvolution tool to natively support **GPU execution**, completing benchmark analyses in under one minute — over two orders of magnitude faster than the slowest competing methods — with moderate memory requirements. On synthetic and real benchmark datasets, SNMF significantly outperforms state-of-the-art methods in deconvolution accuracy. On a human melanoma dataset, it recovers biologically meaningful cell-type signatures — including a tumor-boundary transition zone — without any reference input.
 
 ---
 
@@ -163,6 +157,19 @@ The notebook `./results/melanoma/main.ipynb` runs the entire analysis on the mat
 The entire benchmarking pipeline has been run using both **R version 4.4.1** and **Python 3.9**. You can install the Python dependencies via pip:
 
 ```bash
-git clone https://github.com/LuisAlonsoEsteban/SNMF_paper.git
+git clone https://github.com/LuisAlonsoEsteban/SNMF-paper.git
 cd SNMF_paper
 pip install -r requirements.txt
+```
+
+The R dependencies are harder to install with a single command, but can be met by running the following:
+```R
+install.packages('devtools')
+devtools::install_github('YMa-lab/CARD')
+devtools::install_github("qunhualilab/retrofit")
+devtools::install_github("yyolanda/SMART")
+install.packages("BiocManager")
+BiocManager::install(version='devel')
+BiocManager::install("STdeconvolve")
+install.packages("RcppHungarian")
+```
