@@ -1,7 +1,7 @@
 # SNMF: Ultrafast, Spatially-Aware Deconvolution for Spatial Transcriptomics
 
 <p align="center">
-  <img src="assets/GrpahicalAbstract.jpg" width="900">
+  <img src="assets/GraphicalAbstract.jpg" width="900">
 </p>
 
 **SNMF (Spatial Non-negative Matrix Factorization)** is a rapid, accurate, and reference-free deconvolution method for sequencing-based spatial transcriptomics data. It extends classical NMF with explicit spatial modeling and is the first spatial transcriptomics deconvolution tool to natively support GPU acceleration, while providing a seamless CPU fallback.
@@ -52,7 +52,7 @@ All the code in this repository has been explicitly designed for execution in **
 
 ## Data
 
-All the data used for the different experiments in this repo can be downloaded from Zenodo [here](https://doi.org/10.5281/zenodo.18852117)
+All the data used for the different experiments in this repo can be downloaded from Zenodo [here](https://doi.org/10.5281/zenodo.18852117).
 
 ---
 
