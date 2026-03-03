@@ -16,8 +16,8 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-VALUE=$3
-if [ -z "$VALUE" ]; then
+TAU=$3
+if [ -z "$TAU" ]; then
     exit 1
 fi
 
@@ -26,4 +26,4 @@ module purge
 module load R/4.4.1-gfbf-2023a
 
 # Run the R script
-Rscript ./load_data.R $DATA_PATH $OUTPUT_PATH $VALUE
+Rscript ./load_data.R $DATA_PATH $OUTPUT_PATH $TAU

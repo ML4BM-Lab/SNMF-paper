@@ -3,8 +3,6 @@ args <- commandArgs(trailingOnly = TRUE)
 if(length(args) == 0) stop("Please provide the data directory path")
 output_path <- args[1]
 k <- as.integer(args[2])
-num_initializations <- as.integer(args[3])
-probs <- as.numeric(args[4])
 seed <- as.integer(args[5])
 
 library(GPUmatrix)
@@ -21,13 +19,13 @@ S <- gpu.matrix(S, dtype = "float32")
 set.seed(seed)
 
 output <- NMFKLMixing(gpu_counts, S = S, k = k,
-                      niter = 2000, tol = 1e-4, num_initializations=num_initializations)
+                      niter = 2000, tol = 1e-4, num_initializations=10)
 
 W <- as.matrix(output$W)
 H <- as.matrix(output$H)
 
-D <- diag(matrixStats::colQuantiles(W, probs = probs, na.rm = T))
-D_1 <- diag(1/matrixStats::colQuantiles(W, probs = probs, na.rm = T))
+D <- diag(matrixStats::colQuantiles(W, probs = 0.75, na.rm = T))
+D_1 <- diag(1/matrixStats::colQuantiles(W, probs = 0.75, na.rm = T))
 
 # Normalize the W and H matrices
 W <- W %*% D_1; 

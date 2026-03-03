@@ -8,7 +8,7 @@ OUTPUT_PATH=""
 VISIUM=false
 K=""
 PROPORTIONS_PATH=""
-SNMF_VALUE="0.5"
+SNMF_TAU="0.5"
 STARFYSH_LR="1e-6"
 HUNGARIAN=false
 SEED=42
@@ -34,8 +34,8 @@ while [[ $# -gt 0 ]]; do
     --proportions_path=*)
       PROPORTIONS_PATH="${1#*=}"
       ;;
-    --snmf_value=*)
-      SNMF_VALUE="${1#*=}"
+    --snmf_tau=*)
+      SNMF_TAU="${1#*=}"
       ;;
     --hungarian=*)
       HUNGARIAN="${1#*=}"
@@ -47,7 +47,7 @@ while [[ $# -gt 0 ]]; do
       SEED="${1#*=}"
       ;;
     --help|-h)
-      echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT [--proportions_path=FILE] [--visium=true|false] --starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-seed=SEED]"
+      echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT [--snmf_tau=SNMF_TAU] [--proportions_path=FILE] [--visium=true|false] --starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-seed=SEED]"
       exit 0
       ;;
     *)
@@ -61,7 +61,7 @@ done
 # Validate required args
 if [ -z "$DATA_PATH" ] || [ -z "$MARKERS_PATH" ] || [ -z "$OUTPUT_PATH" ] || [ -z "$K" ]; then
   echo "Error: Missing required arguments."
-  echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT [--starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-ssed=SEED]"
+  echo "Usage: $0 --data_path=FILE --markers_path=FILE --output_path=DIR --k=INT [--proportions_path=FILE] [--visium=true|false] --starfysh_lr=STARFYSH_LR] [--hungarian=true|false] [-seed=SEED]"
   exit 1
 fi
 
@@ -81,7 +81,7 @@ mkdir -p "$OUTPUT_PATH/logs"
       $SEED
 ) > "$OUTPUT_PATH/logs/retrofit.log" 2>&1 &
 
-sleep 10 # This avoids 'sbatch: error: Batch job submission failed: Socket timed out on send/recv operation'
+sleep 10
 
 ## SNMF (ours)
 (
@@ -90,10 +90,8 @@ sleep 10 # This avoids 'sbatch: error: Batch job submission failed: Socket timed
   bash run.sh \
       "$DATA_PATH" \
       "$OUTPUT_PATH/SNMF/" \
-      "$SNMF_VALUE" \
+      "$SNMF_TAU" \
       $K \
-      10 \
-      0.75 \
       "$PROPORTIONS_PATH" \
       $SEED
 ) > "$OUTPUT_PATH/logs/SNMF.log" 2>&1 &

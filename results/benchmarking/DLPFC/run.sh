@@ -31,7 +31,7 @@ for folder in "$base_dir"/*; do
         bash /scratch/lalonsoeste/PhD/NMF_deconvolution/run.sh \
             --data_path="$counts_path" \
             --markers_path="$markers_path" \
-            --output_path="/scratch/lalonsoeste/PhD/NMF_deconvolution/benchmarking/DLPFC/results/${sample}" \
+            --output_path="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/DLPFC/new/${sample}" \
             --visium=true \
             --k="$k" \
             --starfysh_lr="1e-6" \
@@ -56,7 +56,7 @@ for folder in "$base_dir"/*; do
 
         python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/DLPFC/annotate.py \
             "${folder}/filtered_feature_bc_matrix.h5ad" \
-            "/scratch/lalonsoeste/PhD/NMF_deconvolution/benchmarking/DLPFC/results/${sample}"
+            "/scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/DLPFC/new/${sample}"
     fi
 done
 

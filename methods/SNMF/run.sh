@@ -12,8 +12,8 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-VALUE=$3
-if [ -z "$VALUE" ]; then
+TAU=$3
+if [ -z "$TAU" ]; then
     exit 1
 fi
 
@@ -22,19 +22,9 @@ if [ -z "$K" ]; then
     exit 1
 fi
 
-NUM_INITIALIZATIONS=$5
-if [ -z "$NUM_INITIALIZATIONS" ]; then
-    exit 1
-fi
+PROPORTIONS_PATH=$5
 
-PROBS=$6
-if [ -z "$PROBS" ]; then
-    exit 1
-fi
-
-PROPORTIONS_PATH=$7
-
-SEED=$8
+SEED=$6
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -53,7 +43,7 @@ while true; do
     TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
     if (( TEST_JOBS < MAX_TEST_JOBS )); then
       echo "Loading data..."
-      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $VALUE)
+      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $TAU)
       echo "Data loaded!"
       break
     else
@@ -63,7 +53,7 @@ while true; do
 done
 
 echo "Deconvolution started..."
-jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $K $NUM_INITIALIZATIONS $PROBS $SEED)
+jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $K $SEED)
 echo "Deconvolution finished!"
 
 if [ ! -z "$PROPORTIONS_PATH" ]; then

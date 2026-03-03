@@ -134,17 +134,17 @@ latex_path = os.path.join(results_path, "ari_table.tex")
 with open(latex_path, "w") as f:
     f.write("\\begin{table*}[!t]\n")
     f.write("\\centering\n")
-    f.write("\\caption{Adjusted Rand Index (ARI) for all methods across samples.}\n")
+    f.write("\\caption{\\textbf{Adjusted Rand Index (ARI) for all methods across all 12 DLPFC tissue sections.} The best-performing method for each sample is shown in bold. SNMF achieves the highest ARI in 10 out of 12 samples. In samples 151671 and 151674, where SNMF does not rank first, it ranks second. Mean and standard deviation across all 12 samples are reported in the final two rows. Absolute ARI values are moderate for all methods, reflecting the inherent difficulty of evaluating deconvolution via dominant cell-type assignment in a tissue where each annotated region contains a mixture of cell types (see main text for discussion). Sections 151669--151672 were analyzed with $k=5$ (lacking Layer 1 and 2 annotation); all others with $k=7$.}\n")
     f.write("\\label{tab:ari_results}\n")
 
     col_format = "l|" + "c" * n_methods
     f.write(f"\\begin{{tabular}}{{{col_format}}}\n")
-    f.write("\\hline\n")
+    f.write("\\toprule\n")
 
     # Header
     header = "\\textbf{Sample} & " + " & ".join([f"\\textbf{{{m}}}" for m in methods]) + " \\\\\n"
     f.write(header)
-    f.write("\\hline\n")
+    f.write("\\midrule\n")
 
     # Rows
     for j, sample in enumerate(samples):
@@ -176,6 +176,42 @@ with open(latex_path, "w") as f:
         row = f"\\textbf{{{sample}}}" + " & " + " & ".join(row_values) + " \\\\\n"
         f.write(row)
 
-    f.write("\\hline\n")
+    # Mean and std
+    f.write("\\midrule\n")
+
+    mean_values = np.nanmean(data, axis=1)
+    std_values = np.nanstd(data, axis=1)
+
+    if np.all(np.isnan(mean_values)):
+        best_mean = None
+    else:
+        best_mean = np.nanmax(mean_values)
+
+    mean_row = []
+    for i in range(n_methods):
+        value = mean_values[i]
+
+        if np.isnan(value):
+            mean_row.append("--")
+        else:
+            formatted = f"{value:.3f}"
+            if best_mean is not None and np.isclose(value, best_mean):
+                formatted = f"\\textbf{{{formatted}}}"
+            mean_row.append(formatted)
+
+    f.write("\\textbf{Mean} & " + " & ".join(mean_row) + " \\\\\n")
+
+    std_row = []
+    for i in range(n_methods):
+        value = std_values[i]
+
+        if np.isnan(value):
+            std_row.append("--")
+        else:
+            std_row.append(f"{value:.3f}")
+
+    f.write("\\textbf{Std} & " + " & ".join(std_row) + " \\\\\n")
+
+    f.write("\\bottomrule\n")
     f.write("\\end{tabular}\n")
     f.write("\\end{table*}\n")

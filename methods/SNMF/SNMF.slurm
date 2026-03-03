@@ -18,17 +18,7 @@ if [ -z "$K" ]; then
     exit 1
 fi
 
-NUM_INITIALIZATIONS=$3
-if [ -z "$NUM_INITIALIZATIONS" ]; then
-    exit 1
-fi
-
-PROBS=$4
-if [ -z "$PROBS" ]; then
-    exit 1
-fi
-
-SEED=$5
+SEED=$3
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -39,4 +29,4 @@ module load CUDA
 module load Apptainer
 
 # Run the R script
-apptainer exec --nv --bind $OUTPUT_PATH:$OUTPUT_PATH r-ver_4.5.1.sif Rscript ./SNMF.R $OUTPUT_PATH $K $NUM_INITIALIZATIONS $PROBS $SEED
+apptainer exec --nv --bind $OUTPUT_PATH:$OUTPUT_PATH r-ver_4.5.1.sif Rscript ./SNMF.R $OUTPUT_PATH $K $SEED

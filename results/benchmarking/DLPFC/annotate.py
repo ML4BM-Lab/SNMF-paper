@@ -88,15 +88,21 @@ for method in methods:
     pred_key = f"{method}_major_ct"
     
     # Remove NA
-    mask = adata.obs[pred_key].notna()
-    y_true = adata.obs.loc[mask, "Region"].astype(str)
-    y_pred = adata.obs.loc[mask, pred_key].astype(str)
+    mask = adata.obs[pred_key].notna() & adata.obs["Region"].notna()
+    y_true = adata.obs.loc[mask, "Region"]
+    y_pred = adata.obs.loc[mask, pred_key]
 
     # Build confusion matrix
     true_labels = np.unique(y_true)
     pred_labels = np.unique(y_pred)
 
-    cm = confusion_matrix(y_true, y_pred, labels=true_labels)
+    true_label_map = {lab: i for i, lab in enumerate(true_labels)}
+    y_true_cat = np.array([true_label_map[x] for x in y_true])
+
+    pred_label_map = {lab: i for i, lab in enumerate(pred_labels)}
+    y_pred_cat = np.array([pred_label_map[x] for x in y_pred])
+
+    cm = confusion_matrix(y_true_cat, y_pred_cat)
 
     # Hungarian matching (maximize overlap)
     row_ind, col_ind = linear_sum_assignment(-cm)

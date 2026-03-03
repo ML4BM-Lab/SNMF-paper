@@ -5,7 +5,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if(length(args) == 0) stop("Please provide the data directory path")
 data_path <- args[1]
 output_path <- args[2]
-value <- as.numeric(args[3])
+tau <- as.numeric(args[3])
 
 counts <- read.csv(data_path, row.names=1, check.names=FALSE)
 
@@ -19,14 +19,14 @@ positions <- matrix(as.numeric(unlist(strsplit(colnames(counts), "x"))),
 x <- positions[,1]
 y <- positions[,2]
 
-meanValue <- function(gamma, x, y, value) {
+meanValue <- function(gamma, x, y, tau) {
     S <- exp(-gamma * as.matrix(dist(cbind(x,y)))^2)
     S[S < 1e-3] <- 0 
     S <- Diagonal(x = 1/rowSums(S)) %*% S
-    return((mean(diag(S))-value)^2)
+    return((mean(diag(S))-tau)^2)
 }
 
-gamma <- optim(1, meanValue, method="BFGS", value=value, x=x, y=y)$par
+gamma <- optim(1, meanValue, method="BFGS", tau=tau, x=x, y=y)$par
 
 S <- exp(-gamma * as.matrix(dist(cbind(x,y)))^2)
 S[S < 1e-3] <- 0 

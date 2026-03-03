@@ -154,7 +154,6 @@ def plot_proportions(csv_files, normalize=False):
                     length=3         # shorter ticks (optional)
                 )
 
-    # plt.tight_layout(pad=0.8, w_pad=0.2, h_pad=0.2)
     plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.png"), dpi=300, bbox_inches="tight")
     plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.pdf"), dpi=300, bbox_inches="tight")
     plt.close()

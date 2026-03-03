@@ -1,10 +1,15 @@
 import os
 import sys
+
 import pandas as pd
 import numpy as np
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 import seaborn as sns
+
+from scipy.spatial.distance import jensenshannon
+
 from scipy.stats import ttest_ind
 
 # === Configuration ===
@@ -73,10 +78,20 @@ def rmse(output):
     global ground_truth
     return np.sqrt(((output - ground_truth) ** 2).mean(axis=1)).tolist()
 
+def jsd(output):
+    global ground_truth
+    P = output.values
+    Q = ground_truth.values
+    return [jensenshannon(p, q)**2 for p, q in zip(P, Q)]
 
 def get_metrics(output, fpath):
     mem, time = parse_sacct_output(fpath)
-    return {'time': [time], 'mem': [mem], 'rmse': rmse(output)}
+    return {
+        'time': [time],
+        'mem': [mem],
+        'rmse': rmse(output),
+        'jsd': jsd(output)
+    }
 
 
 def significance_stars(p):
@@ -197,13 +212,77 @@ def plot_rmse(metrics):
     plt.savefig(os.path.join(folder, "plots", "rmse_comparison.pdf"), dpi=300)
     plt.close()
 
+def plot_jsd(metrics):
+    global folder
+
+    methods_present = [m for m in METHOD_ORDER if m in metrics]
+    palette = [METHOD_COLOR_MAP[m] for m in methods_present]
+
+    jsd_data = []
+    for m in methods_present:
+        for val in metrics[m]['jsd']:
+            jsd_data.append({'Method': m, 'JSD': val})
+
+    jsd_df = pd.DataFrame(jsd_data)
+
+    plt.figure(figsize=(11, 6))
+    ax = sns.boxplot(
+        x="Method", y="JSD", data=jsd_df,
+        order=methods_present, palette=palette,
+        width=0.65, fliersize=2, linewidth=1.2
+    )
+
+    # Significance vs SNMF
+    if "SNMF" in metrics:
+        ref_vals = np.array(metrics["SNMF"]["jsd"])
+        y_max_all = 0
+
+        for i, method in enumerate(methods_present):
+            if method == "SNMF":
+                continue
+            vals = np.array(metrics[method]["jsd"])
+            _, pval = ttest_ind(vals, ref_vals, equal_var=False, nan_policy='omit')
+            star = significance_stars(pval)
+
+            y_max = np.nanmax(vals)
+            y = y_max * 1.05
+            y_max_all = max(y_max_all, y)
+            ax.text(i, y, star, ha='center', va='bottom',
+                    fontsize=14, fontweight='bold', color='black')
+
+        ylim = ax.get_ylim()
+        ax.set_ylim(ylim[0], max(ylim[1], y_max_all * 1.15))
+
+    ax.set_title("Jensen-Shannon Divergence per Method", pad=15, weight='bold', fontsize=18)
+    ax.set_xlabel("")
+    ax.set_ylabel("Jensen-Shannon Divergence", fontsize=15)
+    ax.set_xticks([])
+
+    legend_handles = [
+        Patch(facecolor=METHOD_COLOR_MAP[m], edgecolor='black', label=m)
+        for m in methods_present
+    ]
+
+    ax.legend(
+        handles=legend_handles,
+        title="Method", title_fontsize=13,
+        loc="center left",
+        bbox_to_anchor=(1.02, 0.5),
+        frameon=True
+    )
+
+    sns.despine()
+    plt.tight_layout()
+    plt.savefig(os.path.join(folder, "plots", "jsd_comparison.png"), dpi=300)
+    plt.savefig(os.path.join(folder, "plots", "jsd_comparison.pdf"), dpi=300)
+    plt.close()
+
 
 def plot_metrics(metrics):
     global folder
     os.makedirs(os.path.join(folder, "plots"), exist_ok=True)
     methods_present = [m for m in METHOD_ORDER if m in metrics]
-    print(methods_present)
-    print([metrics[m]['time'] for m in methods_present])
+
     time_data = pd.DataFrame([
         {"Method": m, "Time (s)": np.nanmean(metrics[m]['time'])} for m in methods_present
     ])
@@ -215,6 +294,7 @@ def plot_metrics(metrics):
     plot_bar(mem_data, "Memory (MB)", "Memory Usage Comparison", "memory_comparison.png", log_scale=False)
 
     plot_rmse(metrics)
+    plot_jsd(metrics)
 
 
 def main():

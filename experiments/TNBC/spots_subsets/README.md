@@ -1,1 +1,0 @@
-nohup bash /scratch/lalonsoeste/PhD/NMF_deconvolution/experiments/starfysh_synthetic/spots_subsets/run.sh &
