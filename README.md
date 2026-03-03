@@ -18,8 +18,8 @@ Our R package is, to our knowledge, the first spatial transcriptomics deconvolut
 
 ---
 
-# Repository overviw
-e
+# Repository overview
+
 This repository contains all the code needed to replicate all the results in the paper.
 
 ## High-Performance Computing Environment
