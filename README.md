@@ -108,7 +108,7 @@ Legend:
 In order to run the benchmark pipeline with default parameters, run the following command:
 
 ```bash
-nohup bash ./run.sh \
+nohup bash ./benchmark.sh \
     --data_path=[DATA_PATH] \
     --markers_path=[MARKER_GENES_PATH] \
     --output_path=[OUTPUT_PATH] \
@@ -120,7 +120,7 @@ nohup bash ./run.sh \
 For instance, to obtain Figure 1A-D from the manuscript, run the following after downloading the data from Zenodo into the `./data` directory:
 
 ```bash
-nohup bash ./run.sh \
+nohup bash ./benchmark.sh \
     --data_path=./data/TNBC_counts.csv \
     --markers_path=./data/TNBC_marker_genes.csv \
     --output_path=./benchmarking/TNBC \
