@@ -1,0 +1,3 @@
+[submodule "SNMF"]
+	path = SNMF
+	url = git@github.com:LuisAlonsoEsteban/SNMF.git
