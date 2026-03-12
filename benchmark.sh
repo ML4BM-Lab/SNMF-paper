@@ -91,6 +91,7 @@ sleep 10
       "$DATA_PATH" \
       "$OUTPUT_PATH/SNMF/" \
       "$SNMF_TAU" \
+      "KL_poisson" \
       $K \
       "$PROPORTIONS_PATH" \
       $SEED

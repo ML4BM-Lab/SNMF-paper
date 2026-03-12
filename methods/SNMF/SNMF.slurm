@@ -13,12 +13,17 @@ if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-K=$2
+LOSS_FUNC=$2
+if [ -z "$LOSS_FUNC" ]; then
+    LOSS_FUNC="KL_poisson"
+fi
+
+K=$3
 if [ -z "$K" ]; then
     exit 1
 fi
 
-SEED=$3
+SEED=$4
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -29,4 +34,4 @@ module load CUDA
 module load Apptainer
 
 # Run the R script
-apptainer exec --nv --bind $OUTPUT_PATH:$OUTPUT_PATH r-ver_4.5.1.sif Rscript ./SNMF.R $OUTPUT_PATH $K $SEED
+apptainer exec --nv --bind $OUTPUT_PATH:$OUTPUT_PATH r-ver_4.5.1.sif Rscript ./SNMF.R $OUTPUT_PATH $LOSS_FUNC $K $SEED

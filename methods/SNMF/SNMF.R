@@ -2,8 +2,9 @@
 args <- commandArgs(trailingOnly = TRUE)
 if(length(args) == 0) stop("Please provide the data directory path")
 output_path <- args[1]
-k <- as.integer(args[2])
-seed <- as.integer(args[5])
+loss_func <- args[2]
+k <- as.integer(args[3])
+seed <- as.integer(args[4])
 
 library(GPUmatrix)
 library(torch)
@@ -11,14 +12,22 @@ library(torch)
 load(paste0(output_path, "tmp/data.RData"))
 load(paste0(output_path, "tmp/S.RData"))
 
-source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/NMFKLMixing.R")
+if (loss_func == "KL_poisson") {
+    source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/update_rules/KL_poisson.R")
+} else if (loss_func == "squared_error") {
+    source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/update_rules/squared_error.R")
+} else if (loss_func == "KL_NB") {
+    source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/update_rules/KL_NB.R")
+} else {
+    stop("Loss function selected not supported.")
+}
 
 gpu_counts <- gpu.matrix(counts, dtype = "float32")
 S <- gpu.matrix(S, dtype = "float32")
 
 set.seed(seed)
 
-output <- NMFKLMixing(gpu_counts, S = S, k = k,
+output <- snmf(gpu_counts, S = S, k = k,
                       niter = 2000, tol = 1e-4, num_initializations=10)
 
 W <- as.matrix(output$W)

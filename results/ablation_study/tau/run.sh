@@ -1,12 +1,12 @@
 #/bin/bash
 
 # DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/counts.csv"
-# OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/TNBC"
+# OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/tau/TNBC"
 # K="5"
 # PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/proportions.csv"
 
 DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/scDesign3/PDAC/counts/mixture_file.csv"
-OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/PDAC"
+OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/tau/PDAC"
 K="20"
 PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/scDesign3/PDAC/counts/proportions.csv"
 
@@ -23,9 +23,8 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/v$val/" \
         "$val" \
+        "KL_poisson" \
         "$K" \
-        10 \
-        0.75 \
         "$PROPORTIONS_PATH" \
         "$SEED"
   ) > "$OUTPUT_PATH/logs/SNMF_v${val}.log" 2>&1 &
@@ -36,7 +35,7 @@ done
 wait
 
 source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/plot_metrics.py \
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/tau/plot_metrics.py \
   "$OUTPUT_PATH" \
   "$PROPORTIONS_PATH"
 

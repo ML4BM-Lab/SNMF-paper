@@ -17,14 +17,19 @@ if [ -z "$TAU" ]; then
     exit 1
 fi
 
-K=$4
+LOSS_FUNC=$4
+if [ -z "$LOSS_FUNC" ]; then
+    exit 1
+fi
+
+K=$5
 if [ -z "$K" ]; then
     exit 1
 fi
 
-PROPORTIONS_PATH=$5
+PROPORTIONS_PATH=$6
 
-SEED=$6
+SEED=$7
 if [ -z "$SEED" ]; then
     exit 1
 fi
@@ -53,7 +58,7 @@ while true; do
 done
 
 echo "Deconvolution started..."
-jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $K $SEED)
+jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $LOSS_FUNC $K $SEED)
 echo "Deconvolution finished!"
 
 if [ ! -z "$PROPORTIONS_PATH" ]; then
