@@ -6,7 +6,7 @@
 #SBATCH --mem=32G
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=rtx3090
-#SBATCH --time=07:00:00
+#SBATCH --time=10:00:00
 
 OUTPUT_PATH=$1
 if [ -z "$OUTPUT_PATH" ]; then

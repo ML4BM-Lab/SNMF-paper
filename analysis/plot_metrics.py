@@ -281,6 +281,10 @@ def plot_jsd(metrics):
 def plot_metrics(metrics):
     global folder
     os.makedirs(os.path.join(folder, "plots"), exist_ok=True)
+
+    save_metric_summary(metrics)
+
+    
     methods_present = [m for m in METHOD_ORDER if m in metrics]
 
     time_data = pd.DataFrame([
@@ -295,6 +299,35 @@ def plot_metrics(metrics):
 
     plot_rmse(metrics)
     plot_jsd(metrics)
+
+
+def save_metric_summary(metrics):
+    global folder
+
+    rows = []
+
+    for method in [m for m in METHOD_ORDER if m in metrics]:
+        rmse_vals = np.array(metrics[method]["rmse"])
+        jsd_vals = np.array(metrics[method]["jsd"])
+
+        rows.append({
+            "Method": method,
+            "RMSE_mean": np.nanmean(rmse_vals),
+            "RMSE_Q1": np.nanpercentile(rmse_vals, 25),
+            "RMSE_Q3": np.nanpercentile(rmse_vals, 75),
+            "RMSE_IQR": np.nanpercentile(rmse_vals, 75) - np.nanpercentile(rmse_vals, 25),
+            "JSD_mean": np.nanmean(jsd_vals),
+            "JSD_Q1": np.nanpercentile(jsd_vals, 25),
+            "JSD_Q3": np.nanpercentile(jsd_vals, 75),
+            "JSD_IQR": np.nanpercentile(jsd_vals, 75) - np.nanpercentile(jsd_vals, 25)
+        })
+
+    df = pd.DataFrame(rows)
+
+    outpath = os.path.join(folder, "plots", "metric_summary.csv")
+    df.to_csv(outpath, index=False)
+
+    print(f"✅ Metric summary saved to {outpath}")
 
 
 def main():
