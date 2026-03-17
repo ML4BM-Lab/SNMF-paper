@@ -18,21 +18,28 @@ This repository contains all the code needed to replicate all the results in the
 
 ## High-Performance Computing Environment
 
-All experiments in the manuscript were executed on the **DIPC Hyperion cluster** (Donostia International Physics Center, Spain), a high-performance computing (HPC) environment designed for large-scale scientific workloads.
+All experiments in the manuscript were executed on the [**DIPC Hyperion cluster**](https://scc.dipc.org/docs/systems/hyperion/overview/) (Donostia International Physics Center, Spain), a high-performance computing (HPC) environment designed for large-scale scientific workloads.
 
 ### Cluster Specifications (Hyperion)
 
 - **Scheduler:** SLURM workload manager  
-- **CPU nodes:**  
-  - Dual-socket Intel Xeon processors  
-  - 32–128 cores per node  
-  - 128–512 GB RAM per node  
-- **GPU nodes:**  
-  - NVIDIA A100 and RTX3090 GPUs  
-  - Up to 4 GPUs per node  
-  - 40–80 GB GPU memory per device  
-- **High-speed interconnect:** InfiniBand  
+
+- **Compute Nodes:**  
+  - **CPU-only nodes:**  
+    - Intel Xeon Gold/Ice/Platinum series  
+    - 48–128 cores per node  
+    - 96 GB–2 TB RAM per node  
+
+  - **GPU nodes:**  
+    - NVIDIA GPUs: RTX 3090 (24 GB), A100 PCIe/SXM4 (80 GB), RTX A6000 (48 GB)  
+    - Typically paired with Intel Xeon Gold/Ice/Platinum CPUs, 48–64 cores, 96 GB–2 TB RAM  
+
+- **Interconnect:** InfiniBand HDR high-speed network  
 - **Parallel file system:** Lustre  
+
+- **Notes:**  
+  - RTX 3090 GPU nodes are used for benchmarks to avoid giving an exaggerated performance advantage that might result from higher-end GPUs (A100, A6000).  
+  - Node selection should consider memory, CPU cores, and GPU availability depending on workload requirements.  
 
 All benchmarking experiments were run in batch mode through SLURM, ensuring reproducibility and scalability.
 
@@ -44,9 +51,7 @@ All the code in this repository has been explicitly designed for execution in **
 
 - Non-interactive execution support  
 - Scriptable workflows  
-- GPU/CPU device selection via argument flags  
 - Deterministic seeding for reproducibility  
-- Efficient memory handling for large spatial datasets 
 
 ---
 
@@ -123,7 +128,7 @@ For instance, to obtain Figure 1A-D from the manuscript, run the following after
 nohup bash ./benchmark.sh \
     --data_path=./data/TNBC_counts.csv \
     --markers_path=./data/TNBC_marker_genes.csv \
-    --output_path=./benchmarking/TNBC \
+    --output_path=./results/benchmarking/TNBC \
     --k=5 \
     --proportions_path=./data/TNBC_proportions.csv \
     --hungarian=true &
@@ -142,7 +147,7 @@ The notebook `./results/melanoma/main.ipynb` runs the entire analysis on the mat
       ./../data/ST_mel1_rep2_counts.csv \
       ./../melanoma/ \
       0.5 \ # Tau
-      5 \ # k
+      4 \ # k
       "" \
       42 # Seed
 ) &
@@ -157,7 +162,7 @@ The notebook `./results/melanoma/main.ipynb` runs the entire analysis on the mat
 The entire benchmarking pipeline has been run using both **R version 4.4.1** and **Python 3.9**. You can install the Python dependencies via pip:
 
 ```bash
-git clone https://github.com/LuisAlonsoEsteban/SNMF-paper.git
+git clone https://github.com/ML4BM-Lab/SNMF-paper.git
 cd SNMF_paper
 pip install -r requirements.txt
 ```
