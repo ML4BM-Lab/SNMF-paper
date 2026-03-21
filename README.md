@@ -10,6 +10,8 @@ This repository contains the code used to generate the results in the paper:
 
 > **SNMF: Ultrafast, Spatially-Aware Deconvolution for Spatial Transcriptomics**
 
+Preprint currently available on *bioRxiv*: [Read here](https://www.biorxiv.org/content/10.64898/2026.03.17.712043v1.full.pdf).
+
 ---
 
 # Repository overview
