@@ -1,4 +1,24 @@
-snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol = 1e-03, 
+get_R <- function(V, eps = 1e-8) {
+  V_cpu <- as.matrix(V)
+  mu <- mean(V_cpu)
+  var <- mean(apply(V_cpu, 1, var))
+
+  if (!is.finite(var) || var <= mu + eps) {
+    stop("Negative binomial dispersion invalid: variance must be greater than mean. Use Poisson NMF or regularize dispersion.")
+  }
+
+  r <- mu^2 / (var - mu)
+  r <- max(r, eps)
+
+  r <- mu^2 / (var - mu)
+  R <- gpu.matrix(r, nrow(V), ncol(V), 
+                    dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
+                    device = GPUmatrix:::device(V))
+
+  return(R)
+}
+
+snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol = 1e-03, Rupdate_iter=10,
                          niter = 100, num_initializations=10) 
 {
   dtype = "float32" # Define the data type for GPU matrices
@@ -42,13 +62,7 @@ snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol 
   best_H <- NULL
 
   # Experiment 1: Fixed dispersion r
-  V_cpu <- as.matrix(V)
-  mu <- mean(V_cpu)
-  var <- mean(apply(V_cpu, 1, var))
-  r <- mu^2 / (var - mu)
-  R <- gpu.matrix(r, nrow(V), ncol(V), 
-                    dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
-                    device = GPUmatrix:::device(V))
+  R <- get_R(V)
   
   for (init_run in 1:num_initializations) {
     # Re-initialize W and H for each run
@@ -70,7 +84,7 @@ snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol 
       H_current <- updateH(V, W_current, H_current, S, WHS_current, R) # Update H
       W_current <- updateW(V, W_current, H_current, S, WHS_current, R) # Update W
     }
-    
+  
     # Calculate the loss (e.g., Frobenius norm of the difference) for the current initialization
     V_reconstructed <- W_current %*% (H_current %*% S)
     current_loss <- mean((V_reconstructed - V)^2) # Mean squared error as loss
@@ -128,6 +142,10 @@ snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol 
     res <- list(W = Winit, H = Hinit) # Return the current W and H
     return(res)
   }
+
+  if (iter %% Rupdate_iter == 0) {
+    R <- get_R(V_new)
+  }
 }
 
 # Optimized version of updateW function
@@ -142,9 +160,7 @@ updateW <- function (V, W, H, S, WHS, R) {
 # Optimized version of updateH function
 updateH <- function (V, W, H, S, WHS, R) {  
   num <- (t(W) %*% (V / (WHS + R))) %*% t(S) # Numerator of the update rule
-  print(num)
   denom <- (t(W) %*% (R / (WHS + R))) %*% t(S) # Denominator of the update rule
-  print(denom)
   H <- H * num / denom # Multiplicative update rule for H
   return(H)
 }

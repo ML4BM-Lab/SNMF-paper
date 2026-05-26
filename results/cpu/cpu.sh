@@ -48,24 +48,30 @@ while true; do
     TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
     if (( TEST_JOBS < MAX_TEST_JOBS )); then
       echo "Loading data..."
+      cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF
       jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $TAU)
       echo "Data loaded!"
       break
     else
-      echo "Max SLURM test QoS jobs reached. Will try again in 30 seconds"
-      sleep 30
+      echo "Max SLURM test QoS jobs reached. Will try again in 60 seconds"
+      sleep 60
     fi
 done
 
-echo "Deconvolution started..."
-jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $LOSS_FUNC $K $SEED)
-echo "Deconvolution finished!"
+while true; do
+    TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
+    if (( TEST_JOBS < MAX_TEST_JOBS )); then
+      echo "Deconvolution started..."
+      cd /scratch/lalonsoeste/PhD/NMF_deconvolution/results/cpu
+      jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $LOSS_FUNC $K $SEED)
+      echo "Deconvolution finished!"
+      break
+    else
+      echo "Max SLURM test QoS jobs reached. Will try again in 60 seconds"
+      sleep 60
+    fi
+done
 
-if [ ! -z "$PROPORTIONS_PATH" ]; then
-    echo "Annotation started..."
-    Rscript ./annotate.R $OUTPUT_PATH $PROPORTIONS_PATH
-    echo "Annotation finished!"
-fi
 
 sacct -j $jid1 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/preprocessing_sacct.log
 sacct -j $jid2 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/sacct.log

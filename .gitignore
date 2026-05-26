@@ -1,5 +1,4 @@
 .venv
-data
 **/tmp/
 
 *.sif
@@ -23,6 +22,10 @@ data
 
 *.pickle
 *.h5
+*.h5ad
+*.zip
+**/*.zarr/
+*.json
 
 repo
 

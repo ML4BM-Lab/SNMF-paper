@@ -8,9 +8,9 @@ OUTPUT_PATH=""
 VISIUM=false
 K=""
 PROPORTIONS_PATH=""
-SNMF_TAU="0.5"
+SNMF_TAU="0.4"
 STARFYSH_LR="1e-6"
-HUNGARIAN=false
+HUNGARIAN=true
 SEED=42
 
 # Parse flags
@@ -96,6 +96,22 @@ sleep 10
       "$PROPORTIONS_PATH" \
       $SEED
 ) > "$OUTPUT_PATH/logs/SNMF.log" 2>&1 &
+
+sleep 10
+
+## NMF (S=I)
+(
+  cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF
+  mkdir -p "$OUTPUT_PATH/NMF/"
+  bash run.sh \
+      "$DATA_PATH" \
+      "$OUTPUT_PATH/NMF/" \
+      1 \
+      "KL_poisson" \
+      $K \
+      "$PROPORTIONS_PATH" \
+      $SEED
+) > "$OUTPUT_PATH/logs/NMF.log" 2>&1 &
 
 sleep 10
 

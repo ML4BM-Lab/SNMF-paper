@@ -1,16 +1,24 @@
 #/bin/bash
 
-# DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/counts.csv"
-# OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/loss_function/TNBC"
-# K="5"
-# PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/TNBC/processed/proportions.csv"
+DATA_PATH=$1
+if [ -z "$DATA_PATH" ]; then
+    exit 1
+fi
 
-DATA_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/scDesign3/PDAC/counts/mixture_file.csv"
-OUTPUT_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/loss_function/PDAC"
-K="20"
-PROPORTIONS_PATH="/scratch/lalonsoeste/PhD/NMF_deconvolution/data/scDesign3/PDAC/counts/proportions.csv"
+OUTPUT_PATH=$2
+if [ -z "$OUTPUT_PATH" ]; then
+    exit 1
+fi
 
-SEED=42
+K=$3
+if [ -z "$K" ]; then
+    exit 1
+fi
+
+PROPORTIONS_PATH=$4
+if [ -z "$PROPORTIONS_PATH" ]; then
+    exit 1
+fi
 
 loss_functions=(KL_poisson squared_error KL_NB)
 
@@ -22,18 +30,18 @@ do
     bash run.sh \
         "$DATA_PATH" \
         "$OUTPUT_PATH/$loss_func/" \
-        "0.5" \
+        "0.4" \
         "$loss_func" \
         "$K" \
         "$PROPORTIONS_PATH" \
-        "$SEED"
+        "42"
   ) > "$OUTPUT_PATH/logs/SNMF_${loss_func}.log" 2>&1 &
 done
 
 wait
 
-# source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-# python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/tau/plot_metrics.py \
-#   "$OUTPUT_PATH" \
-#   "$PROPORTIONS_PATH"
+source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/tau/plot_metrics.py \
+  "$OUTPUT_PATH" \
+  "$PROPORTIONS_PATH"
 
