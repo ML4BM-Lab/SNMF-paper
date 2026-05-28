@@ -18,6 +18,7 @@ from scipy.stats import wilcoxon
 MEM_CONVERSION = {'T': 2, 'G': 1, 'M': 0, 'K': -1}
 METHOD_ORDER = [
     "SNMF",
+    "NMF",
     "STdeconvolve",
     "SpiceMix",
     "CARD",
@@ -94,9 +95,7 @@ def pcc(output):
     vals = []
 
     for p, q in zip(P, Q):
-        if np.std(p) == 0 or np.std(q) == 0:
-            vals.append(np.nan)
-        else:
+        if np.std(p) != 0 and np.std(q) != 0:
             vals.append(pearsonr(p, q)[0])
 
     return vals

@@ -259,10 +259,14 @@ sc.pp.filter_genes(adata_spots, min_counts=1)
 spot_props.index = spot_ids
 spot_props = spot_props.loc[adata_spots.obs_names,:]
 
+adata_spots.obs = pd.concat([adata_spots.obs, spot_props], axis=1)
+
 adata_spots.write_h5ad(OUT_H5AD)
 adata_spots.to_df().transpose().to_csv(OUT_DIR / "pseudospots.csv")
 spot_props.to_csv(OUT_PROPS)
 markers_df.to_csv(OUT_MARKER_GENES)
+
+sc.pl.spatial(adata_spots, color=spot_props.columns, spot_size=SPOT_DIAMETER_UM, show=False)[0].figure.savefig(OUT_DIR / "spatial_proportions.png")
 
 print(f"\nSaved h5ad: {OUT_H5AD}")
 print(f"Saved proportions: {OUT_PROPS}")

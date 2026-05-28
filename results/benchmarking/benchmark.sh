@@ -204,10 +204,10 @@ wait
 # Hungarian annotation
 if [[ "$HUNGARIAN" == "true" ]]; then
   module load R/4.4.1-gfbf-2023a
-  for method in CARD RETROFIT STdeconvolve SMART starfysh BayesTME SpiceMix SNMF; do
+  for method in CARD RETROFIT STdeconvolve SMART starfysh BayesTME SpiceMix NMF SNMF; do
     if [[ -f "$OUTPUT_PATH/$method/${method}_proportions.csv" ]]; then
       echo "Computing hungarian algorithm for $method ..."
-      Rscript ./annotation/hungarian.R \
+      Rscript /scratch/lalonsoeste/PhD/NMF_deconvolution/annotation/hungarian.R \
           "$OUTPUT_PATH/$method/" \
           "$OUTPUT_PATH/$method/${method}_proportions.csv" \
           "$PROPORTIONS_PATH"

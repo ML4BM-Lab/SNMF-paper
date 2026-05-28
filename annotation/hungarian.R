@@ -8,6 +8,12 @@ proportions_path <- args[3]
 raw_proportions <- t(read.csv(raw_proportions_path, row.names=1))
 proportions <- read.csv(proportions_path, row.names=1)
 
+common <- rownames(proportions)[
+    rownames(proportions) %in% colnames(raw_proportions)
+]
+proportions <- proportions[common,]
+raw_proportions <- raw_proportions[,common]
+
 library(RcppHungarian)
 
 k <- dim(raw_proportions)[1]

@@ -1,168 +1,310 @@
-get_R <- function(V, eps = 1e-8) {
-  V_cpu <- as.matrix(V)
-  mu <- mean(V_cpu)
-  var <- mean(apply(V_cpu, 1, var))
+safe_pmax <- function(X, eps) {
+  objectClass <- class(X)[[1]]
 
-  if (!is.finite(var) || var <= mu + eps) {
-    stop("Negative binomial dispersion invalid: variance must be greater than mean. Use Poisson NMF or regularize dispersion.")
+  if (objectClass == "gpu.matrix.torch" || objectClass == "gpu.matrix.tensorflow") {
+    return(X + (X < eps) * (eps - X))
   }
 
-  r <- mu^2 / (var - mu)
-  r <- max(r, eps)
-
-  r <- mu^2 / (var - mu)
-  R <- gpu.matrix(r, nrow(V), ncol(V), 
-                    dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
-                    device = GPUmatrix:::device(V))
-
-  return(R)
+  pmax(X, eps)
 }
 
-snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol = 1e-03, Rupdate_iter=10,
-                         niter = 100, num_initializations=10) 
-{
-  dtype = "float32" # Define the data type for GPU matrices
-  
-  # Determine if V is a GPU matrix and set initial W and H accordingly
+snmf <- function(
+  V,
+  S = diag(ncol(V)),
+  k = 10,
+  Winit = NULL,
+  Hinit = NULL,
+  tol = 1e-03,
+  Rupdate_iter = 20,
+  niter = 100,
+  num_initializations = 10
+) {
+
+  dtype <- "float32"
+
   objectClass <- class(V)[[1]]
   objectPackage <- attr(class(V), "package")
-  
-  if (!is.null(objectPackage) && (objectClass == "gpu.matrix.torch" || objectClass == "gpu.matrix.tensorflow")) {
-    # If V is a GPU matrix, initialize Winit and Hinit as GPU matrices
+
+  if (!is.null(objectPackage) &&
+      (objectClass == "gpu.matrix.torch" || objectClass == "gpu.matrix.tensorflow")) {
+
     if (is.null(Winit)) {
-      Winit <- gpu.matrix(runif(nrow(V) * k), nrow(V), k, 
-                          dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
-                          device = GPUmatrix:::device(V))
+      Winit <- gpu.matrix(
+        runif(nrow(V) * k), nrow(V), k,
+        dtype = dtype(V),
+        type = GPUmatrix:::typeGPUmatrix(V),
+        device = GPUmatrix:::device(V)
+      )
     }
+
     if (is.null(Hinit)) {
-      Hinit <- gpu.matrix(runif(k * ncol(V)), k, ncol(V), 
-                          dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
-                          device = GPUmatrix:::device(V))
+      Hinit <- gpu.matrix(
+        runif(k * ncol(V)), k, ncol(V),
+        dtype = dtype(V),
+        type = GPUmatrix:::typeGPUmatrix(V),
+        device = GPUmatrix:::device(V)
+      )
     }
+
   } else {
-    # If V is a regular matrix, initialize Winit and Hinit as regular matrices
+
     if (is.null(Winit)) {
       Winit <- matrix(runif(nrow(V) * k), nrow(V), k)
     }
+
     if (is.null(Hinit)) {
       Hinit <- matrix(runif(k * ncol(V)), k, ncol(V))
     }
   }
-  
-  # Control dimensions of input matrices to ensure compatibility
+
   controlDimensionNMF(Winit, Hinit, V, k)
-  
-  Vold <- V # Store the initial V for convergence check
-  
-  # --- Multiple Initializations and Best Selection ---
-  initial_iterations <- max(1, floor(niter / 10)) # Number of iterations for each initialization
-  
-  best_loss <- Inf # Initialize with a very large loss
+
+  Vold <- V
+
+  if (!is.null(objectPackage) &&
+      (objectClass == "gpu.matrix.torch" || objectClass == "gpu.matrix.tensorflow")) {
+
+    R <- list(
+      alpha = rep(0, nrow(V)),
+      beta = rep(0, ncol(V)),
+      phi = gpu.matrix(
+        matrix(1e-4, nrow(V), ncol(V)),
+        dtype = dtype(V),
+        type = GPUmatrix:::typeGPUmatrix(V),
+        device = GPUmatrix:::device(V)
+      ),
+      eps = 1e-10,
+      phi.min = 1e-8,
+      phi.max = 1e3,
+      inner.iter = 10
+    )
+
+  } else {
+
+    R <- list(
+      alpha = rep(0, nrow(V)),
+      beta = rep(0, ncol(V)),
+      phi = matrix(1e-4, nrow(V), ncol(V)),
+      eps = 1e-10,
+      phi.min = 1e-8,
+      phi.max = 1e3,
+      inner.iter = 10
+    )
+  }
+
+  initial_iterations <- max(1, floor(niter / 10))
+
+  best_loss <- Inf
   best_W <- NULL
   best_H <- NULL
 
-  # Experiment 1: Fixed dispersion r
-  R <- get_R(V)
-  
-  for (init_run in 1:num_initializations) {
-    # Re-initialize W and H for each run
-    if (!is.null(objectPackage) && (objectClass == "gpu.matrix.torch" || objectClass == "gpu.matrix.tensorflow")) {
-      W_current <- gpu.matrix(runif(nrow(V) * k), nrow(V), k, 
-                              dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
-                              device = GPUmatrix:::device(V))
-      H_current <- gpu.matrix(runif(k * ncol(V)), k, ncol(V), 
-                              dtype = dtype(V), type = GPUmatrix:::typeGPUmatrix(V), 
-                              device = GPUmatrix:::device(V))
+  for (init_run in seq_len(num_initializations)) {
+
+    if (!is.null(objectPackage) &&
+        (objectClass == "gpu.matrix.torch" || objectClass == "gpu.matrix.tensorflow")) {
+
+      W_current <- gpu.matrix(
+        runif(nrow(V) * k), nrow(V), k,
+        dtype = dtype(V),
+        type = GPUmatrix:::typeGPUmatrix(V),
+        device = GPUmatrix:::device(V)
+      )
+
+      H_current <- gpu.matrix(
+        runif(k * ncol(V)), k, ncol(V),
+        dtype = dtype(V),
+        type = GPUmatrix:::typeGPUmatrix(V),
+        device = GPUmatrix:::device(V)
+      )
+
     } else {
+
       W_current <- matrix(runif(nrow(V) * k), nrow(V), k)
       H_current <- matrix(runif(k * ncol(V)), k, ncol(V))
     }
-    
-    # Run a few iterations for the current initialization
-    for (iter_init in 1:initial_iterations) {
-      WHS_current <- W_current %*% (H_current %*% S) # Calculate R for update rules
-      H_current <- updateH(V, W_current, H_current, S, WHS_current, R) # Update H
-      W_current <- updateW(V, W_current, H_current, S, WHS_current, R) # Update W
+
+    for (iter_init in seq_len(initial_iterations)) {
+
+      WHS_current <- W_current %*% H_current %*% S
+      WHS_current <- safe_pmax(WHS_current, R$eps)
+
+      W_current <- updateW(V, W_current, H_current, S, WHS_current, R)
+
+      WHS_current <- W_current %*% H_current %*% S
+      WHS_current <- safe_pmax(WHS_current, R$eps)
+
+      H_current <- updateH(V, W_current, H_current, S, WHS_current, R)
     }
-  
-    # Calculate the loss (e.g., Frobenius norm of the difference) for the current initialization
-    V_reconstructed <- W_current %*% (H_current %*% S)
-    current_loss <- mean((V_reconstructed - V)^2) # Mean squared error as loss
-    
-    # Keep track of the best initialization
+
+    V_reconstructed <- W_current %*% H_current %*% S
+    current_loss <- mean((V_reconstructed - V)^2)
+
     if (current_loss < best_loss) {
       best_loss <- current_loss
       best_W <- W_current
       best_H <- H_current
     }
   }
-  
-  Winit <- best_W # Use the best W from initializations
-  Hinit <- best_H # Use the best H from initializations
-  
-  # --- Main Iteration Loop ---
-  for (iter in 1:niter) {
-    # Calculate R (reconstructed matrix)
-    WHS <- Winit %*% (Hinit %*% S) 
-    
-    # Update H and W using the multiplicative update rules
+
+  Winit <- best_W
+  Hinit <- best_H
+
+  for (iter in seq_len(niter)) {
+
+    WHS <- Winit %*% Hinit %*% S
+    WHS <- safe_pmax(WHS, R$eps)
+
+    Winit <- updateW(V, Winit, Hinit, S, WHS, R)
+
+    WHS <- Winit %*% Hinit %*% S
+    WHS <- safe_pmax(WHS, R$eps)
+
     Hinit <- updateH(V, Winit, Hinit, S, WHS, R)
-    Winit <- updateW(V, Winit, Hinit, S, WHS, R) 
-    
-    # Periodically check for convergence and normalize W
+
+    if (iter %% Rupdate_iter == 0) {
+      WHS <- Winit %*% Hinit %*% S
+      WHS <- safe_pmax(WHS, R$eps)
+
+      R <- updateR(V, Winit, Hinit, S, WHS, R)
+    }
+
     if (iter %% 100 == 0) {
-      cat("Iteration:", iter,"\n")
+      cat("Iteration:", iter, "\n")
     }
+
     if (iter %% 10 == 0) {
-        
-      # Normalize W by column sums and adjust H accordingly
-      myD <- colSums(Winit) # Sum of each column in W
-      Winit <- t((t(Winit)/myD)) # Normalize W so each column sums to 1
-      Hinit <- Hinit * myD # Adjust H to compensate for W normalization
-      
-      Vnew <- Winit %*% (Hinit %*% S) # Reconstruct V with updated W and H
-      
-      # Check for convergence based on the change in V
-      if(is.na(mean((Vnew - Vold)^2))) {
-        browser()
-        stop("Error in calculating mean squared error. Check the dimensions of Vnew and Vold.")
+
+      myD <- colSums(Winit)
+      myD <- safe_pmax(myD, R$eps)
+
+      Winit <- t(t(Winit) / myD)
+      Hinit <- Hinit * myD
+
+      Vnew <- Winit %*% Hinit %*% S
+
+      mse_change <- mean((Vnew - Vold)^2)
+
+      if (is.na(mse_change)) {
+        stop("Error in calculating mean squared error. Check dimensions of Vnew and Vold.")
       }
-      if (mean((Vnew - Vold)^2) < tol) {
+
+      if (mse_change < tol) {
         message("NMF converged early.")
-        res <- list(W = Winit, H = Hinit) # Return results
-        return(res)
+        return(list(W = Winit, H = Hinit, R = R))
       }
-      Vold <- Vnew # Update Vold for the next convergence check
+
+      Vold <- Vnew
     }
-  }
-  
-  # If the loop finishes without converging within `niter` iterations
-  if (iter == niter) {
-    warning(message = "Maximum number of iterations reached without convergence. Consider increasing 'niter'.")
-    res <- list(W = Winit, H = Hinit) # Return the current W and H
-    return(res)
   }
 
-  if (iter %% Rupdate_iter == 0) {
-    R <- get_R(V_new)
-  }
+  warning("Maximum number of iterations reached without convergence. Consider increasing 'niter'.")
+
+  return(list(W = Winit, H = Hinit, R = R))
 }
 
 # Optimized version of updateW function
-updateW <- function (V, W, H, S, WHS, R) {  
-  tHS <- t(H %*% S)
-  num <- (V / (WHS + R)) %*% tHS # Numerator of the update rule
-  denom <- (R / (WHS + R)) %*% tHS # Denominator of the update rule
-  W <- W * num / denom # Multiplicative update rule for W
-  return(W)
+updateW <- function(V, W, H, S, WHS, R) {
+
+  eps <- if (!is.null(R$eps)) R$eps else 1e-10
+
+  WHS <- safe_pmax(WHS, eps)
+
+  Phi <- R$phi
+  Phi <- safe_pmax(Phi, if (!is.null(R$phi.min)) R$phi.min else 1e-8)
+
+  Rpos <- V / WHS
+
+  Q <- (1 + Phi * V) / (1 + Phi * WHS)
+
+  B <- H %*% S
+
+  numerator <- Rpos %*% t(B)
+  denominator <- Q %*% t(B)
+
+  W.new <- W * numerator / safe_pmax(denominator, eps)
+  W.new <- safe_pmax(W.new, eps)
+
+  return(W.new)
 }
 
 # Optimized version of updateH function
-updateH <- function (V, W, H, S, WHS, R) {  
-  num <- (t(W) %*% (V / (WHS + R))) %*% t(S) # Numerator of the update rule
-  denom <- (t(W) %*% (R / (WHS + R))) %*% t(S) # Denominator of the update rule
-  H <- H * num / denom # Multiplicative update rule for H
-  return(H)
+updateH <- function(V, W, H, S, WHS, R) {
+
+  eps <- if (!is.null(R$eps)) R$eps else 1e-10
+
+  WHS <- safe_pmax(WHS, eps)
+
+  Phi <- R$phi
+  Phi <- safe_pmax(Phi, if (!is.null(R$phi.min)) R$phi.min else 1e-8)
+
+  Rpos <- V / WHS
+
+  Q <- (1 + Phi * V) / (1 + Phi * WHS)
+
+  numerator   <- t(W) %*% Rpos %*% t(S)
+  denominator <- t(W) %*% Q %*% t(S)
+
+  H.new <- H * numerator / safe_pmax(denominator, eps)
+  H.new <- safe_pmax(H.new, eps)
+
+  return(H.new)
+}
+
+updateR <- function(V, W, H, S, WHS, R) {
+
+  eps <- if (!is.null(R$eps)) R$eps else 1e-10
+  phi.min <- if (!is.null(R$phi.min)) R$phi.min else 1e-8
+  phi.max <- if (!is.null(R$phi.max)) R$phi.max else 1e3
+  inner.iter <- if (!is.null(R$inner.iter)) R$inner.iter else 10
+
+  m <- nrow(V)  # genes
+  n <- ncol(V)  # spots
+
+  WHS <- safe_pmax(WHS, eps)
+
+  if (is.null(R$alpha)) {
+    R$alpha <- rep(0, m)
+  }
+
+  if (is.null(R$beta)) {
+    R$beta <- rep(0, n)
+  }
+
+  alpha <- R$alpha
+  beta  <- R$beta
+
+  D <- (V - WHS)^2 - WHS
+  C <- WHS^2
+
+  for (iter in seq_len(inner.iter)) {
+
+    alpha <- (
+      rowSums(D) -
+      rowSums(C * matrix(beta, nrow = m, ncol = n, byrow = TRUE))
+    ) / safe_pmax(rowSums(C), eps)
+
+    beta <- (
+      colSums(D) -
+      colSums(C * matrix(alpha, nrow = m, ncol = n, byrow = FALSE))
+    ) / safe_pmax(colSums(C), eps)
+
+    # Identifiability constraint: mean(beta) = 0
+    beta.mean <- mean(beta)
+
+    beta  <- beta - beta.mean
+    alpha <- alpha + beta.mean
+  }
+
+  Phi <- outer(alpha, beta, "+")
+
+  Phi <- pmin(safe_pmax(Phi, phi.min), phi.max)
+
+  R$alpha <- alpha
+  R$beta  <- beta
+  R$phi   <- Phi
+  R$theta <- 1 / Phi
+
+  return(R)
 }
 
 # Function to handle potential negative values very close to zero, setting them to zero

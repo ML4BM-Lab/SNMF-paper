@@ -20,7 +20,9 @@ if [ -z "$PROPORTIONS_PATH" ]; then
     exit 1
 fi
 
-loss_functions=(KL_poisson squared_error KL_NB)
+loss_functions=(squared_error KL_poisson KL_NB)
+
+mkdir -p "$OUTPUT_PATH/logs/"
 
 for loss_func in "${loss_functions[@]}"
 do
@@ -36,6 +38,9 @@ do
         "$PROPORTIONS_PATH" \
         "42"
   ) > "$OUTPUT_PATH/logs/SNMF_${loss_func}.log" 2>&1 &
+
+  sleep 10
+  
 done
 
 wait
