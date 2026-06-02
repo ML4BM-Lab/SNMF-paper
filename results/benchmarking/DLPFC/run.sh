@@ -28,7 +28,7 @@ for folder in "$base_dir"/*; do
 
         k=$(cat "$folder/K.txt")
 
-        bash /scratch/lalonsoeste/PhD/NMF_deconvolution/run.sh \
+        bash /scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/benchmark.sh \
             --data_path="$counts_path" \
             --markers_path="$markers_path" \
             --output_path="/scratch/lalonsoeste/PhD/NMF_deconvolution/results/benchmarking/DLPFC/results/${sample}" \

@@ -58,7 +58,7 @@ for dirpath, subdirs, files in os.walk(results_path):
             pcc = np.array([
                 pearsonr(p, q)[0]
                 for p, q in zip(P, Q)
-                if np.std(p) == 0 or np.std(q) == 0
+                if np.std(p) != 0 and np.std(q) != 0
             ])
             pccs[value] = pcc
 

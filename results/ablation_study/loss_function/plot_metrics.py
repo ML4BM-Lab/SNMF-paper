@@ -99,7 +99,7 @@ for dirpath, subdirs, files in os.walk(results_path):
             # PCC
             pcc = np.array([
                 pearsonr(p, q)[0]
-                if np.std(p) == 0 or np.std(q) == 0
+                if np.std(p) != 0 and np.std(q) != 0
                 else np.nan
                 for p, q in zip(P, Q)
             ])
@@ -145,6 +145,7 @@ for dirpath, subdirs, files in os.walk(results_path):
                 vals.append(score)
 
             ssims[value] = np.array(vals)
+
 
 # Convert to DataFrame (long format)
 rmse_df = pd.DataFrame(

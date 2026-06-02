@@ -33,7 +33,7 @@ adata.var['mt'] = np.logical_or(
 )
 adata.var['rb'] = adata.var_names.str.startswith(('RP', 'Rp', 'rp'))
 
-sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], inplace=True)
+sc.pp.calculate_qc_metrics(adata, qc_vars=['mt'], percent_top=None, inplace=True)
 mask_cell = adata.obs['pct_counts_mt'] < 100
 mask_gene = np.logical_and(~adata.var['mt'], ~adata.var['rb'])
 

@@ -34,25 +34,25 @@ obj = SpiceMix(
     path2result=result_path,
 )
 
-def load_from_csv(self, csv_path, replicate_name='r1'):
+def load_from_csv(obj, csv_path, replicate_name='r1'):
     expr = pd.read_csv(csv_path, index_col=0).T
 
-    self.repli_list = [replicate_name]  # mock one replicate
-    self.Ys = [torch.tensor(expr.values, **self.context_Y)]
-    self.Ns, self.Gs = [expr.shape[0]], [expr.shape[1]]
-    self.GG = self.Gs[0]
-    self.genes = [list(expr.columns)]
+    obj.repli_list = [replicate_name]  # mock one replicate
+    obj.Ys = [torch.tensor(expr.values, **obj.context_Y)]
+    obj.Ns, obj.Gs = [expr.shape[0]], [expr.shape[1]]
+    obj.GG = obj.Gs[0]
+    obj.genes = [list(expr.columns)]
     
     spot_locations = pd.DataFrame(expr.index.str.split("x").tolist(), columns=["array_row", "array_col"])
     spot_locations = spot_locations[["array_row", "array_col"]].values.astype(np.float32)
 
     E = np.array(kneighbors_graph(spot_locations, n_neighbors=20, mode='connectivity', include_self=False).todense())
     
-    self.Es = [E]
-    self.Es_isempty = [sum(map(len, E)) == 0]
+    obj.Es = [E]
+    obj.Es_isempty = [sum(map(len, E)) == 0]
     
     expr['repli'] = replicate_name
-    self.meta = expr
+    obj.meta = expr
 
 load_from_csv(obj, data_path)
 

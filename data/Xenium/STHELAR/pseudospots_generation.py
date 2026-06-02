@@ -14,13 +14,15 @@ from sklearn.neighbors import KDTree
 # USER CONFIGURATION
 # =========================================================
 
-SDATA_PATH = Path(
-    "/scratch/lalonsoeste/PhD/NMF_deconvolution/data/Xenium/STHELAR/bone_marrow_s0/sdata_bone_marrow_s0.zarr"
-)
+DATA_DIR = Path("/scratch/lalonsoeste/PhD/NMF_deconvolution/data/Xenium/STHELAR/sdata_lung_s1")
+
+SDATA_PATH = DATA_DIR / f"{DATA_DIR.name}.zarr"
 
 TABLE_NAME = "table_cells"
 CELL_TYPE_LABEL = "final_label"
-QCFILTER_CELLTYPE_LABEL = "Less10"
+QCFILTER_CELLTYPE_LABEL = [
+    "Less10",
+]
 COUNTS_LAYER_NAME = "count"
 
 SPOT_DIAMETER_UM = 55.0
@@ -29,7 +31,7 @@ CENTER_TO_CENTER_UM = 100.0
 
 MIN_CELLS_PER_SPOT = 1
 
-OUT_DIR = Path("/scratch/lalonsoeste/PhD/NMF_deconvolution/data/Xenium/STHELAR/bone_marrow_s0") / "pseudospots"
+OUT_DIR = DATA_DIR / "pseudospots"
 OUT_H5AD = OUT_DIR / "pseudospots.h5ad"
 OUT_PROPS = OUT_DIR / "proportions.csv"
 OUT_MARKER_GENES = OUT_DIR / "marker_genes.csv"
@@ -53,7 +55,7 @@ print(list(adata.obsm.keys()))
 if CELL_TYPE_LABEL not in adata.obs.columns:
     raise ValueError(f"{CELL_TYPE_LABEL!r} not found in adata.obs")
 else:
-    adata = adata[adata.obs[CELL_TYPE_LABEL] != QCFILTER_CELLTYPE_LABEL,:].copy()
+    adata = adata[adata.obs[CELL_TYPE_LABEL] not in QCFILTER_CELLTYPE_LABEL,:].copy()
 
 # =========================================================
 # GET COORDINATES
