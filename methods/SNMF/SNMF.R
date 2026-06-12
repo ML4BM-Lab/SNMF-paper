@@ -55,3 +55,5 @@ rownames(W) <- rownames(counts)
 
 write.csv(W, paste0(output_path, "signatures.csv"))
 write.csv(HC, paste0(output_path, "SNMF_proportions.csv"))
+
+write(output$niter, file=paste0(output_path, "niter.txt"))

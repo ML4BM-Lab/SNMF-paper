@@ -20,33 +20,32 @@ if [ -z "$PROPORTIONS_PATH" ]; then
     exit 1
 fi
 
-loss_functions=(squared_error KL_poisson KL_NB)
+values=(0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0)
 
 mkdir -p "$OUTPUT_PATH/logs/"
 
-for loss_func in "${loss_functions[@]}"
+for val in "${values[@]}"
 do
   (
     cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF
-    mkdir -p "$OUTPUT_PATH/$loss_func/"
+    mkdir -p "$OUTPUT_PATH/v$val/"
     bash run.sh \
         "$DATA_PATH" \
-        "$OUTPUT_PATH/$loss_func/" \
-        "0.4" \
-        "$loss_func" \
+        "$OUTPUT_PATH/v$val/" \
+        "$val" \
+        "KL_NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "42"
-  ) > "$OUTPUT_PATH/logs/SNMF_${loss_func}.log" 2>&1 &
+  ) > "$OUTPUT_PATH/logs/SNMF_v${val}.log" 2>&1 &
 
   sleep 10
-  
 done
 
 wait
 
 source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/loss_function/plot_metrics.py \
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/ablation_study/tau/plot_metrics.py \
   "$OUTPUT_PATH" \
   "$PROPORTIONS_PATH"
 

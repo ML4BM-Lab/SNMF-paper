@@ -412,6 +412,7 @@ def main():
         print("No CSV files found.")
         sys.exit(0)
 
+
     metrics = {}
     for fpath in csv_files:
         parent_folder = os.path.basename(os.path.dirname(fpath))
@@ -419,6 +420,8 @@ def main():
         if output.shape == ground_truth.shape:
             output = output.loc[ground_truth.index]
             metrics[parent_folder] = get_metrics(output, fpath)
+        else:
+            print(f"Shape mismatch for {parent_folder}: got {output.shape}, whereas ground truth has {ground_truth.shape}")
 
     plot_metrics(metrics)
     print("✅ Plots saved in 'plots/' folder.")

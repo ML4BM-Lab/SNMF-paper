@@ -106,8 +106,7 @@ snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol 
       }
       if (mean((Vnew - Vold)^2) < tol) {
         message("NMF converged early.")
-        res <- list(W = Winit, H = Hinit) # Return results
-        return(res)
+        return(list(W = Winit, H = Hinit, niter=iter + num_initializations*initial_iterations))
       }
       Vold <- Vnew # Update Vold for the next convergence check
     }
@@ -116,8 +115,7 @@ snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol 
   # If the loop finishes without converging within `niter` iterations
   if (iter == niter) {
     warning(message = "Maximum number of iterations reached without convergence. Consider increasing 'niter'.")
-    res <- list(W = Winit, H = Hinit) # Return the current W and H
-    return(res)
+    return(list(W = Winit, H = Hinit, niter=iter + num_initializations*initial_iterations))
   }
 }
 

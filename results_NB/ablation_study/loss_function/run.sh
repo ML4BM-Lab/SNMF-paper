@@ -46,7 +46,7 @@ done
 wait
 
 source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-python /scratch/lalonsoeste/PhD/NMF_deconvolution/results/ablation_study/loss_function/plot_metrics.py \
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/ablation_study/loss_function/plot_metrics.py \
   "$OUTPUT_PATH" \
   "$PROPORTIONS_PATH"
 

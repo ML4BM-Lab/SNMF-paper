@@ -8,7 +8,7 @@ OUTPUT_PATH=""
 VISIUM=false
 K=""
 PROPORTIONS_PATH=""
-SNMF_TAU="0.4"
+SNMF_TAU="0.8"
 STARFYSH_LR="1e-6"
 HUNGARIAN=true
 SEED=42
@@ -91,7 +91,7 @@ sleep 10
       "$DATA_PATH" \
       "$OUTPUT_PATH/SNMF/" \
       "$SNMF_TAU" \
-      "KL_poisson" \
+      "KL_NB" \
       $K \
       "$PROPORTIONS_PATH" \
       $SEED
@@ -107,7 +107,7 @@ sleep 10
       "$DATA_PATH" \
       "$OUTPUT_PATH/NMF/" \
       1 \
-      "KL_poisson" \
+      "KL_NB" \
       $K \
       "$PROPORTIONS_PATH" \
       $SEED
@@ -200,6 +200,8 @@ sleep 10
 
 # wait for all background jobs to finish
 wait
+
+mv $OUTPUT_PATH/NMF/SNMF_proportions.csv $OUTPUT_PATH/NMF/NMF_proportions.csv
 
 # Hungarian annotation
 if [[ "$HUNGARIAN" == "true" ]]; then

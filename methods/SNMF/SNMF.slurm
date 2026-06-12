@@ -3,7 +3,7 @@
 #SBATCH --output=./logs/SNMF_%j.out
 #SBATCH --qos=regular
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --mem=12G
 #SBATCH --gres=gpu:1
 #SBATCH --constraint=rtx3090
 #SBATCH --time=01:00:00
