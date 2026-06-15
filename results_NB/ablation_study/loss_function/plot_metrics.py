@@ -25,34 +25,49 @@ def pvalue_to_stars(p):
 
 
 def add_significance(ax, data, x_col, y_col, order, pairs, alternative="greater"):
-    ymax = data[y_col].max()
-    y_offset = ymax * 0.05
-    height = ymax * 0.02
+    ymin, ymax = ax.get_ylim()
+    y_range = ymax - ymin
+    if not np.isfinite(y_range) or y_range <= 0:
+        y_range = max(abs(data[y_col].max()), 1.0)
 
-    current_y = ymax + y_offset
+    gap = y_range * 0.035
+    height = y_range * 0.025
+    step = y_range * 0.08
+    text_pad = y_range * 0.01
+
+    current_y = ymax + gap
+    max_annotation_y = current_y
 
     for g1, g2 in pairs:
-        d1 = data[data[x_col] == g1][y_col]
-        d2 = data[data[x_col] == g2][y_col]
+        d1 = data[data[x_col] == g1][y_col].dropna()
+        d2 = data[data[x_col] == g2][y_col].dropna()
+
+        if d1.empty or d2.empty:
+            continue
 
         _, p = mannwhitneyu(d1, d2, alternative=alternative)
         stars = pvalue_to_stars(p)
 
         x1 = order.index(g1)
         x2 = order.index(g2)
+        bracket_top = current_y + height
 
         ax.plot([x1, x1, x2, x2],
-                [current_y, current_y+height, current_y+height, current_y],
-                lw=1.5, c="black")
+                [current_y, bracket_top, bracket_top, current_y],
+                lw=1.5, c="black", zorder=10)
 
         ax.text((x1+x2)/2,
-                current_y+height,
+                bracket_top+text_pad,
                 stars,
                 ha="center",
                 va="bottom",
-                fontsize=12)
+                fontsize=12,
+                zorder=11)
 
-        current_y += y_offset
+        max_annotation_y = max(max_annotation_y, bracket_top + text_pad)
+        current_y += step
+
+    ax.set_ylim(ymin, max_annotation_y + gap)
 
 sns.set_theme(style="whitegrid")
 sns.set_context("talk", font_scale=1.1, rc={
@@ -171,11 +186,23 @@ ssim_df = pd.DataFrame(
 # ---------- FIXED ORDER ----------
 order = sorted(rmse_df["value"].unique(), reverse=True)
 
-# pairwise comparisons for significance
-pairs = []
-for i in range(len(order)):
-    for j in range(i+1, len(order)):
-        pairs.append((order[i], order[j]))
+# pairwise comparisons for significance, using Negative Binomial as reference
+reference_value = "KL_NB"
+if reference_value not in order:
+    raise ValueError(
+        f"Reference loss function '{reference_value}' was not found in results: "
+        + ", ".join(order)
+    )
+
+pairs = [
+    (value, reference_value)
+    for value in order
+    if value != reference_value
+]
+pairs = sorted(
+    pairs,
+    key=lambda pair: abs(order.index(pair[0]) - order.index(pair[1]))
+)
 
 # ---------- RMSE PLOT ----------
 plt.figure(figsize=(10,6))
@@ -184,8 +211,9 @@ ax = sns.violinplot(
     x="value",
     y="rmse",
     hue="value",
-    palette=sns.color_palette("Set2"),
-    order=order
+    palette=sns.color_palette("Set2", n_colors=len(order)),
+    order=order,
+    cut=0
 )
 
 add_significance(
@@ -194,7 +222,8 @@ add_significance(
     "value",
     "rmse",
     order,
-    pairs
+    pairs,
+    alternative="greater"
 )
 
 ax.set_xlabel("Reconstruction")
@@ -216,8 +245,9 @@ ax = sns.violinplot(
     x="value",
     y="jsd",
     hue="value",
-    palette=sns.color_palette("Set2"),
-    order=order
+    palette=sns.color_palette("Set2", n_colors=len(order)),
+    order=order,
+    cut=0
 )
 
 add_significance(
@@ -226,7 +256,8 @@ add_significance(
     "value",
     "jsd",
     order,
-    pairs
+    pairs,
+    alternative="greater"
 )
 
 ax.set_xlabel("Reconstruction")
@@ -245,8 +276,9 @@ ax = sns.violinplot(
     x="value",
     y="pcc",
     hue="value",
-    palette=sns.color_palette("Set2"),
-    order=order
+    palette=sns.color_palette("Set2", n_colors=len(order)),
+    order=order,
+    cut=0
 )
 
 add_significance(
@@ -255,7 +287,8 @@ add_significance(
     "value",
     "pcc",
     order,
-    pairs
+    pairs,
+    alternative="less"
 )
 
 ax.set_xlabel("Reconstruction")
@@ -274,8 +307,9 @@ ax = sns.violinplot(
     x="value",
     y="ssim",
     hue="value",
-    palette=sns.color_palette("Set2"),
-    order=order
+    palette=sns.color_palette("Set2", n_colors=len(order)),
+    order=order,
+    cut=0
 )
 
 add_significance(
@@ -284,7 +318,8 @@ add_significance(
     "value",
     "ssim",
     order,
-    pairs
+    pairs,
+    alternative="less"
 )
 
 ax.set_xlabel("Reconstruction")

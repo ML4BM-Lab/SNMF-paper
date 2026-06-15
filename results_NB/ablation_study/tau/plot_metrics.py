@@ -9,7 +9,68 @@ import matplotlib.pyplot as plt
 
 from scipy.spatial.distance import jensenshannon
 from scipy.stats import pearsonr
+from scipy.stats import mannwhitneyu
 from skimage.metrics import structural_similarity as ssim
+
+
+def pvalue_to_stars(p):
+    if p < 1e-4:
+        return "****"
+    elif p < 1e-3:
+        return "***"
+    elif p < 1e-2:
+        return "**"
+    elif p < 0.05:
+        return "*"
+    return "-"
+
+
+def add_reference_significance(
+    ax,
+    data,
+    x_col,
+    y_col,
+    order,
+    reference_value,
+    alternative,
+):
+    ref_vals = data[np.isclose(data[x_col], reference_value)][y_col].dropna()
+    if ref_vals.empty:
+        return
+
+    ymin, ymax = ax.get_ylim()
+    y_range = ymax - ymin
+    if not np.isfinite(y_range) or y_range <= 0:
+        y_range = max(abs(data[y_col].max()), 1.0)
+
+    gap = y_range * 0.045
+    max_annotation_y = ymax
+
+    for value in order:
+        if np.isclose(value, reference_value):
+            continue
+
+        vals = data[np.isclose(data[x_col], value)][y_col].dropna()
+        if vals.empty:
+            continue
+
+        _, p = mannwhitneyu(vals, ref_vals, alternative=alternative)
+        stars = pvalue_to_stars(p)
+        y = vals.max() + gap
+
+        ax.text(
+            order.index(value),
+            y,
+            stars,
+            ha="center",
+            va="bottom",
+            fontsize=12,
+            zorder=10,
+        )
+        max_annotation_y = max(max_annotation_y, y)
+
+    ax.set_ylim(ymin, max_annotation_y + gap)
+
 
 sns.set_theme(style="whitegrid")
 sns.set_context("talk", font_scale=1.1, rc={
@@ -130,15 +191,48 @@ jsd_df = jsd_df.sort_values("value")
 pcc_df = pcc_df.sort_values("value")
 ssim_df = ssim_df.sort_values("value")
 
+order = sorted(rmse_df["value"].unique())
+reference_value = 1.0
+if not any(np.isclose(value, reference_value) for value in order):
+    raise ValueError(
+        f"Reference tau '{reference_value}' was not found in results: "
+        + ", ".join(map(str, order))
+    )
+
+labels = [
+    f"{value:g}" if value < 1 else f"{value:g} (NMF)"
+    for value in order
+]
+palette = sns.color_palette("Greens", n_colors=len(order) + 2)[1:-1]
+
 # Plot boxplot
 ## RMSE
-plt.figure(figsize=(10, 6))
-ax = sns.boxplot(data=rmse_df, x="value", y="rmse", hue="value", legend=False)
+plt.figure(figsize=(11, 6))
+ax = sns.boxplot(
+    data=rmse_df,
+    x="value",
+    y="rmse",
+    hue="value",
+    order=order,
+    hue_order=order,
+    palette=palette,
+    legend=False
+)
+
+add_reference_significance(
+    ax,
+    rmse_df,
+    "value",
+    "rmse",
+    order,
+    reference_value,
+    alternative="less"
+)
 
 ax.set_xlabel("Tau")
 ax.set_ylabel("RMSE")
 
-labels = [f"{g}" if g < 1 else f"{g} (NMF)" for g in rmse_df["value"].unique()]
+ax.set_xticks(range(len(order)))
 ax.set_xticklabels(labels)
 
 plt.tight_layout()
@@ -148,13 +242,32 @@ plt.savefig(os.path.join(results_path, "plots", "rmse_comparison.pdf"), dpi=300)
 plt.close()
 
 ## Jensen-Shannon divergence
-plt.figure(figsize=(10, 6))
-ax = sns.boxplot(data=jsd_df, x="value", y="jsd", hue="value", legend=False)
+plt.figure(figsize=(11, 6))
+ax = sns.boxplot(
+    data=jsd_df,
+    x="value",
+    y="jsd",
+    hue="value",
+    order=order,
+    hue_order=order,
+    palette=palette,
+    legend=False
+)
+
+add_reference_significance(
+    ax,
+    jsd_df,
+    "value",
+    "jsd",
+    order,
+    reference_value,
+    alternative="less"
+)
 
 ax.set_xlabel("Tau")
 ax.set_ylabel("Jensen-Shannon divergence")
 
-labels = [f"{g}" if g < 1 else f"{g} (NMF)" for g in rmse_df["value"].unique()]
+ax.set_xticks(range(len(order)))
 ax.set_xticklabels(labels)
 
 plt.tight_layout()
@@ -163,13 +276,32 @@ plt.savefig(os.path.join(results_path, "plots", "jsd_comparison.pdf"), dpi=300)
 plt.close()
 
 ## PCC
-plt.figure(figsize=(10, 6))
-ax = sns.boxplot(data=pcc_df, x="value", y="pcc", hue="value", legend=False)
+plt.figure(figsize=(11, 6))
+ax = sns.boxplot(
+    data=pcc_df,
+    x="value",
+    y="pcc",
+    hue="value",
+    order=order,
+    hue_order=order,
+    palette=palette,
+    legend=False
+)
+
+add_reference_significance(
+    ax,
+    pcc_df,
+    "value",
+    "pcc",
+    order,
+    reference_value,
+    alternative="greater"
+)
 
 ax.set_xlabel("Tau")
 ax.set_ylabel("PCC")
 
-labels = [f"{g}" if g < 1 else f"{g} (NMF)" for g in rmse_df["value"].unique()]
+ax.set_xticks(range(len(order)))
 ax.set_xticklabels(labels)
 
 plt.tight_layout()
@@ -178,13 +310,32 @@ plt.savefig(os.path.join(results_path, "plots", "pcc_comparison.pdf"), dpi=300)
 plt.close()
 
 ## SSIM
-plt.figure(figsize=(10, 6))
-ax = sns.boxplot(data=ssim_df, x="value", y="ssim", hue="value", legend=False)
+plt.figure(figsize=(11, 6))
+ax = sns.boxplot(
+    data=ssim_df,
+    x="value",
+    y="ssim",
+    hue="value",
+    order=order,
+    hue_order=order,
+    palette=palette,
+    legend=False
+)
+
+add_reference_significance(
+    ax,
+    ssim_df,
+    "value",
+    "ssim",
+    order,
+    reference_value,
+    alternative="greater"
+)
 
 ax.set_xlabel("Tau")
 ax.set_ylabel("SSIM")
 
-labels = [f"{g}" if g < 1 else f"{g} (NMF)" for g in rmse_df["value"].unique()]
+ax.set_xticks(range(len(order)))
 ax.set_xticklabels(labels)
 
 plt.tight_layout()

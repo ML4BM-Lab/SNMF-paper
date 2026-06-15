@@ -68,7 +68,5 @@ wait
 rm -r "$OUTPUT_PATH/tmp"
 
 source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
-python /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/ablation_study/tau/plot_metrics.py \
-  "$OUTPUT_PATH" \
-  "$PROPORTIONS_PATH"
-
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/ablation_study/ngenes/plot_metrics.py \
+  "$OUTPUT_PATH"

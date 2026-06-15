@@ -11,6 +11,7 @@ import seaborn as sns
 # === Configuration ===
 METHOD_ORDER = [
     "SNMF",
+    "NMF",
     "STdeconvolve",
     "SpiceMix",
     "CARD",
