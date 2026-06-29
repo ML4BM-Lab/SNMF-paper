@@ -26,6 +26,7 @@
 *.zip
 **/*.zarr/
 *.json
+*.parquet
 
 repo
 

@@ -13,13 +13,13 @@ import seaborn as sns
 METHOD_ORDER = [
     "SNMF",
     "NMF",
-    "STdeconvolve",
-    "SpiceMix",
-    "CARD",
     "SMART",
-    "RETROFIT",
-    "starfysh",
+    "CARD",
     "BayesTME",
+    "SpiceMix",
+    "STdeconvolve",
+    "starfysh",
+    "RETROFIT",
 ]
 
 SPOTWISE_METRICS = [

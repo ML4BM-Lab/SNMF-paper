@@ -10,7 +10,7 @@ from scipy.spatial.distance import jensenshannon
 from scipy.stats import pearsonr
 from skimage.metrics import structural_similarity as ssim
 
-from scipy.stats import mannwhitneyu
+from scipy.stats import wilcoxon
 
 def pvalue_to_stars(p):
     if p < 1e-4:
@@ -45,7 +45,7 @@ def add_significance(ax, data, x_col, y_col, order, pairs, alternative="greater"
         if d1.empty or d2.empty:
             continue
 
-        _, p = mannwhitneyu(d1, d2, alternative=alternative)
+        _, p = wilcoxon(d1, d2, alternative=alternative)
         stars = pvalue_to_stars(p)
 
         x1 = order.index(g1)
@@ -56,12 +56,12 @@ def add_significance(ax, data, x_col, y_col, order, pairs, alternative="greater"
                 [current_y, bracket_top, bracket_top, current_y],
                 lw=1.5, c="black", zorder=10)
 
-        ax.text((x1+x2)/2,
-                bracket_top+text_pad,
+        ax.text((x1 + x2) / 2,
+                bracket_top + text_pad,
                 stars,
                 ha="center",
                 va="bottom",
-                fontsize=12,
+                fontsize=18,
                 zorder=11)
 
         max_annotation_y = max(max_annotation_y, bracket_top + text_pad)
@@ -70,15 +70,19 @@ def add_significance(ax, data, x_col, y_col, order, pairs, alternative="greater"
     ax.set_ylim(ymin, max_annotation_y + gap)
 
 sns.set_theme(style="whitegrid")
-sns.set_context("talk", font_scale=1.1, rc={
-    "axes.titlesize": 18,
-    "axes.labelsize": 15,
-    "xtick.labelsize": 12,
-    "ytick.labelsize": 12,
-    "legend.fontsize": 12,
-    "axes.linewidth": 1.2,
-    "grid.linewidth": 0.6
-})
+sns.set_context(
+    "talk",
+    font_scale=1.4,
+    rc={
+        "axes.titlesize": 25,
+        "axes.labelsize": 22,
+        "xtick.labelsize": 17,
+        "ytick.labelsize": 17,
+        "legend.fontsize": 17,
+        "axes.linewidth": 1.4,
+        "grid.linewidth": 0.7,
+    },
+)
 
 results_path = sys.argv[1]
 ground_truth = pd.read_csv(sys.argv[2], index_col=0)
@@ -88,10 +92,16 @@ jsds = {}
 pccs = {}
 ssims = {}
 
+name_dict = {
+    "squared_error": "Frobenius",
+    "KL_poisson": "KL poisson",
+    "KL_NB": "NB log-likelihood (SNMF)"
+}
+
 for dirpath, subdirs, files in os.walk(results_path):
     for f in files:
         if f == "SNMF_proportions.csv":
-            value = dirpath.split("/")[-1]
+            value = name_dict.get(dirpath.split("/")[-1])
             proportions = pd.read_csv(os.path.join(dirpath, f), index_col=0)
 
             proportions = proportions.loc[ground_truth.index]
@@ -184,10 +194,22 @@ ssim_df = pd.DataFrame(
 )
 
 # ---------- FIXED ORDER ----------
-order = sorted(rmse_df["value"].unique(), reverse=True)
+order = [
+    name_dict.get(i) for i in [
+        "squared_error",
+        "KL_poisson",
+        "KL_NB"
+    ]
+]
+
+
+palette = dict(zip(
+    order,
+    sns.color_palette("Set2", n_colors=len(order))
+))
 
 # pairwise comparisons for significance, using Negative Binomial as reference
-reference_value = "KL_NB"
+reference_value = name_dict.get("KL_NB")
 if reference_value not in order:
     raise ValueError(
         f"Reference loss function '{reference_value}' was not found in results: "
@@ -211,7 +233,7 @@ ax = sns.violinplot(
     x="value",
     y="rmse",
     hue="value",
-    palette=sns.color_palette("Set2", n_colors=len(order)),
+    palette=palette,
     order=order,
     cut=0
 )
@@ -226,7 +248,7 @@ add_significance(
     alternative="greater"
 )
 
-ax.set_xlabel("Reconstruction")
+ax.set_xlabel("")
 ax.set_ylabel("RMSE")
 
 plt.tight_layout()
@@ -245,7 +267,7 @@ ax = sns.violinplot(
     x="value",
     y="jsd",
     hue="value",
-    palette=sns.color_palette("Set2", n_colors=len(order)),
+    palette=palette,
     order=order,
     cut=0
 )
@@ -260,8 +282,8 @@ add_significance(
     alternative="greater"
 )
 
-ax.set_xlabel("Reconstruction")
-ax.set_ylabel("Jensen-Shannon divergence")
+ax.set_xlabel("")
+ax.set_ylabel("JSD")
 
 plt.tight_layout()
 
@@ -276,7 +298,7 @@ ax = sns.violinplot(
     x="value",
     y="pcc",
     hue="value",
-    palette=sns.color_palette("Set2", n_colors=len(order)),
+    palette=palette,
     order=order,
     cut=0
 )
@@ -291,8 +313,8 @@ add_significance(
     alternative="less"
 )
 
-ax.set_xlabel("Reconstruction")
-ax.set_ylabel("Pearson Correlation Coefficient")
+ax.set_xlabel("")
+ax.set_ylabel("PCC")
 
 plt.tight_layout()
 
@@ -302,14 +324,16 @@ plt.close()
 
 # ---------- SSIM PLOT ----------
 plt.figure(figsize=(10,6))
-ax = sns.violinplot(
+ax = sns.boxplot(
     data=ssim_df,
     x="value",
     y="ssim",
     hue="value",
-    palette=sns.color_palette("Set2", n_colors=len(order)),
+    palette=palette,
     order=order,
-    cut=0
+    width=0.65,
+    linewidth=1.2,
+    fliersize=2
 )
 
 add_significance(
@@ -322,7 +346,7 @@ add_significance(
     alternative="less"
 )
 
-ax.set_xlabel("Reconstruction")
+ax.set_xlabel("")
 ax.set_ylabel("SSIM")
 
 plt.tight_layout()

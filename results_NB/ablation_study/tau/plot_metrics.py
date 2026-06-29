@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 
 from scipy.spatial.distance import jensenshannon
 from scipy.stats import pearsonr
-from scipy.stats import mannwhitneyu
 from skimage.metrics import structural_similarity as ssim
 
+from scipy.stats import wilcoxon
 
 def pvalue_to_stars(p):
     if p < 1e-4:
@@ -54,7 +54,7 @@ def add_reference_significance(
         if vals.empty:
             continue
 
-        _, p = mannwhitneyu(vals, ref_vals, alternative=alternative)
+        _, p = wilcoxon(vals, ref_vals, alternative=alternative)
         stars = pvalue_to_stars(p)
         y = vals.max() + gap
 
@@ -64,7 +64,7 @@ def add_reference_significance(
             stars,
             ha="center",
             va="bottom",
-            fontsize=12,
+            fontsize=18,
             zorder=10,
         )
         max_annotation_y = max(max_annotation_y, y)
@@ -73,15 +73,19 @@ def add_reference_significance(
 
 
 sns.set_theme(style="whitegrid")
-sns.set_context("talk", font_scale=1.1, rc={
-    "axes.titlesize": 18,
-    "axes.labelsize": 15,
-    "xtick.labelsize": 12,
-    "ytick.labelsize": 12,
-    "legend.fontsize": 12,
-    "axes.linewidth": 1.2,
-    "grid.linewidth": 0.6
-})
+sns.set_context(
+    "talk",
+    font_scale=1.4,
+    rc={
+        "axes.titlesize": 25,
+        "axes.labelsize": 22,
+        "xtick.labelsize": 17,
+        "ytick.labelsize": 17,
+        "legend.fontsize": 17,
+        "axes.linewidth": 1.4,
+        "grid.linewidth": 0.7,
+    },
+)
 
 results_path = sys.argv[1]
 ground_truth = pd.read_csv(sys.argv[2], index_col=0)
@@ -203,7 +207,13 @@ labels = [
     f"{value:g}" if value < 1 else f"{value:g} (NMF)"
     for value in order
 ]
-palette = sns.color_palette("Greens", n_colors=len(order) + 2)[1:-1]
+
+palettes = {
+    "rmse": sns.color_palette("Blues",  n_colors=len(order) + 2)[1:-1],
+    "jsd":  sns.color_palette("Greens", n_colors=len(order) + 2)[1:-1],
+    "pcc":  sns.color_palette("Purples", n_colors=len(order) + 2)[1:-1],
+    "ssim": sns.color_palette("Oranges", n_colors=len(order) + 2)[1:-1],
+}
 
 # Plot boxplot
 ## RMSE
@@ -215,7 +225,7 @@ ax = sns.boxplot(
     hue="value",
     order=order,
     hue_order=order,
-    palette=palette,
+    palette=palettes["rmse"],
     legend=False
 )
 
@@ -229,7 +239,7 @@ add_reference_significance(
     alternative="less"
 )
 
-ax.set_xlabel("Tau")
+ax.set_xlabel("")
 ax.set_ylabel("RMSE")
 
 ax.set_xticks(range(len(order)))
@@ -250,7 +260,7 @@ ax = sns.boxplot(
     hue="value",
     order=order,
     hue_order=order,
-    palette=palette,
+    palette=palettes["jsd"],
     legend=False
 )
 
@@ -264,8 +274,8 @@ add_reference_significance(
     alternative="less"
 )
 
-ax.set_xlabel("Tau")
-ax.set_ylabel("Jensen-Shannon divergence")
+ax.set_xlabel("")
+ax.set_ylabel("JSD")
 
 ax.set_xticks(range(len(order)))
 ax.set_xticklabels(labels)
@@ -284,7 +294,7 @@ ax = sns.boxplot(
     hue="value",
     order=order,
     hue_order=order,
-    palette=palette,
+    palette=palettes["pcc"],
     legend=False
 )
 
@@ -298,7 +308,7 @@ add_reference_significance(
     alternative="greater"
 )
 
-ax.set_xlabel("Tau")
+ax.set_xlabel("")
 ax.set_ylabel("PCC")
 
 ax.set_xticks(range(len(order)))
@@ -318,7 +328,7 @@ ax = sns.boxplot(
     hue="value",
     order=order,
     hue_order=order,
-    palette=palette,
+    palette=palettes["ssim"],
     legend=False
 )
 
@@ -332,7 +342,7 @@ add_reference_significance(
     alternative="greater"
 )
 
-ax.set_xlabel("Tau")
+ax.set_xlabel("")
 ax.set_ylabel("SSIM")
 
 ax.set_xticks(range(len(order)))

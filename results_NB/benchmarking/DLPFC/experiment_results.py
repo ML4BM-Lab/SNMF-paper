@@ -45,13 +45,13 @@ samples = sorted(ari_results.keys())
 methods = [
     "SNMF",
     "NMF",
-    "STdeconvolve",
-    "SpiceMix",
-    "CARD",
     "SMART",
-    "RETROFIT",
+    "CARD",
+    "BayesTME",
+    "SpiceMix",
+    "STdeconvolve",
     "starfysh",
-    "BayesTME"
+    "RETROFIT",
 ]
 
 n_samples = len(samples)
@@ -138,6 +138,8 @@ with open(latex_path, "w") as f:
     f.write("\\caption{\\textbf{Adjusted Rand Index (ARI) for all methods across all 12 DLPFC tissue sections.} The best-performing method for each sample is shown in bold. SNMF achieves the highest ARI in 10 out of 12 samples. In samples 151671 and 151674, where SNMF does not rank first, it ranks second. Mean and standard deviation across all 12 samples are reported in the final two rows. Absolute ARI values are moderate for all methods, reflecting the inherent difficulty of evaluating deconvolution via dominant cell-type assignment in a tissue where each annotated region contains a mixture of cell types (see main text for discussion). Sections 151669--151672 were analyzed with $k=5$ (lacking Layer 1 and 2 annotation); all others with $k=7$.}\n")
     f.write("\\label{tab:ari_results}\n")
 
+    f.write("\\makebox[\\textwidth][c]{\n")
+
     col_format = "l|" + "c" * n_methods
     f.write(f"\\begin{{tabular}}{{{col_format}}}\n")
     f.write("\\toprule\n")
@@ -215,4 +217,5 @@ with open(latex_path, "w") as f:
 
     f.write("\\bottomrule\n")
     f.write("\\end{tabular}\n")
+    f.write("}\n")
     f.write("\\end{table*}\n")

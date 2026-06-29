@@ -19,13 +19,13 @@ MEM_CONVERSION = {'T': 2, 'G': 1, 'M': 0, 'K': -1}
 METHOD_ORDER = [
     "SNMF",
     "NMF",
-    "STdeconvolve",
-    "SpiceMix",
-    "CARD",
     "SMART",
-    "RETROFIT",
+    "CARD",
+    "BayesTME",
+    "SpiceMix",
+    "STdeconvolve",
     "starfysh",
-    "BayesTME"
+    "RETROFIT",
 ]
 
 # Global seaborn style with fine-tuned fonts

@@ -12,13 +12,13 @@ import seaborn as sns
 METHOD_ORDER = [
     "SNMF",
     "NMF",
-    "STdeconvolve",
-    "SpiceMix",
-    "CARD",
     "SMART",
-    "RETROFIT",
+    "CARD",
+    "BayesTME",
+    "SpiceMix",
+    "STdeconvolve",
     "starfysh",
-    "BayesTME"
+    "RETROFIT",
 ]
 
 # Global seaborn style with fine-tuned fonts
@@ -176,7 +176,7 @@ def main():
         sys.exit(0)
 
     plot_proportions(csv_files)
-    # plot_proportions(csv_files, normalize=True)
+    plot_proportions(csv_files, normalize=True)
     print("✅ Plots saved in 'plots/' folder.")
 
 
