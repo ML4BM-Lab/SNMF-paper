@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=SNMF_cpu
-#SBATCH --output=/scratch/lalonsoeste/PhD/NMF_deconvolution/results/cpu/logs/SNMF_%j.out
+#SBATCH --output=/scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/cpu/logs/SNMF_%j.out
 #SBATCH --qos=regular
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=12G
@@ -13,7 +13,7 @@ fi
 
 LOSS_FUNC=$2
 if [ -z "$LOSS_FUNC" ]; then
-    LOSS_FUNC="KL_poisson"
+    LOSS_FUNC="KL_NB"
 fi
 
 K=$3

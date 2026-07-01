@@ -30,13 +30,13 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/cpu/$seed/" \
         "0.4" \
-        "KL_poisson" \
+        "KL_NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "$seed"
   ) > "$OUTPUT_PATH/logs/cpu_${seed}.log" 2>&1 &
 
-  sleep 10
+  sleep 20
 
   (
     cd /scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF
@@ -45,13 +45,13 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/gpu/$seed/" \
         "0.4" \
-        "KL_poisson" \
+        "KL_NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "$seed"
   ) > "$OUTPUT_PATH/logs/gpu_${seed}.log" 2>&1 &
 
-  sleep 10
+  sleep 20
 done
 
 wait

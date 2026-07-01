@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-
 METHOD_ORDER = [
     "SNMF",
     "NMF",
@@ -18,8 +17,8 @@ METHOD_ORDER = [
     "BayesTME",
     "SpiceMix",
     "STdeconvolve",
-    "starfysh",
     "RETROFIT",
+    "starfysh",
 ]
 
 SPOTWISE_METRICS = [

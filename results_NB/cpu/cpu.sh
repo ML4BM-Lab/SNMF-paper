@@ -19,7 +19,7 @@ fi
 
 LOSS_FUNC=$4
 if [ -z "$LOSS_FUNC" ]; then
-    LOSS_FUNC="KL_poisson"
+    LOSS_FUNC="KL_NB"
 fi
 
 K=$5
@@ -71,7 +71,6 @@ while true; do
       sleep 60
     fi
 done
-
 
 sacct -j $jid1 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/preprocessing_sacct.log
 sacct -j $jid2 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/sacct.log

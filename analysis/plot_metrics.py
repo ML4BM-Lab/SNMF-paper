@@ -24,8 +24,8 @@ METHOD_ORDER = [
     "BayesTME",
     "SpiceMix",
     "STdeconvolve",
-    "starfysh",
     "RETROFIT",
+    "starfysh",
 ]
 
 # Global seaborn style with fine-tuned fonts
@@ -365,24 +365,28 @@ def save_metric_summary(metrics):
 
             "RMSE_mean": np.nanmean(rmse_vals),
             "RMSE_var": np.nanvar(rmse_vals),
+            "RMSE_median": np.nanmedian(rmse_vals),
             "RMSE_Q1": np.nanpercentile(rmse_vals, 25),
             "RMSE_Q3": np.nanpercentile(rmse_vals, 75),
             "RMSE_IQR": np.nanpercentile(rmse_vals, 75) - np.nanpercentile(rmse_vals, 25),
 
             "JSD_mean": np.nanmean(jsd_vals),
             "JSD_var": np.nanvar(jsd_vals),
+            "JSD_median": np.nanmedian(jsd_vals),
             "JSD_Q1": np.nanpercentile(jsd_vals, 25),
             "JSD_Q3": np.nanpercentile(jsd_vals, 75),
             "JSD_IQR": np.nanpercentile(jsd_vals, 75) - np.nanpercentile(jsd_vals, 25),
 
             "PCC_mean": np.nanmean(pcc_vals),
             "PCC_var": np.nanvar(pcc_vals),
+            "PCC_median": np.nanmedian(pcc_vals),
             "PCC_Q1": np.nanpercentile(pcc_vals, 25),
             "PCC_Q3": np.nanpercentile(pcc_vals, 75),
             "PCC_IQR": np.nanpercentile(pcc_vals, 75) - np.nanpercentile(pcc_vals, 25),
 
             "SSIM_mean": np.nanmean(ssim_vals),
             "SSIM_var": np.nanvar(ssim_vals),
+            "SSIM_median": np.nanmedian(ssim_vals),
             "SSIM_Q1": np.nanpercentile(ssim_vals, 25),
             "SSIM_Q3": np.nanpercentile(ssim_vals, 75),
             "SSIM_IQR": np.nanpercentile(ssim_vals, 75) - np.nanpercentile(ssim_vals, 25),
