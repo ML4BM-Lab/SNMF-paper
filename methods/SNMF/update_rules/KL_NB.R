@@ -190,7 +190,7 @@ snmf <- function(
 
       if (mse_change < tol) {
         message("NMF converged early.")
-        return(list(W = Winit, H = Hinit, R = R, niter=iter + num_initializations*initial_iterations))
+        return(list(W = Winit, H = Hinit, phi = R$phi, alpha = R$alpha, beta = R$beta, niter=iter + num_initializations*initial_iterations))
       }
 
       Vold <- Vnew
@@ -199,7 +199,7 @@ snmf <- function(
 
   warning("Maximum number of iterations reached without convergence. Consider increasing 'niter'.")
   
-  return(list(W = Winit, H = Hinit, R = R, niter=iter + num_initializations*initial_iterations))
+  return(list(W = Winit, H = Hinit, phi = R$phi, alpha = R$alpha, beta = R$beta, niter = iter + num_initializations*initial_iterations))
 }
 
 # Optimized version of updateW function

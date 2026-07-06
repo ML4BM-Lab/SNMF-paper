@@ -60,6 +60,23 @@ def add_significance(ax, data, x_col, y_col, order, pairs, alternative="two-side
         _, p = mannwhitneyu(d1, d2, alternative=alternative)
         stars = pvalue_to_stars(p)
 
+        mean1 = d1.mean()
+        mean2 = d2.mean()
+
+        # Speed ratio of GPU relative to CPU:
+        # CPU seconds/iter divided by GPU seconds/iter
+        if g1.upper() == "CPU" and g2.upper() == "GPU":
+            speed_ratio = mean1 / mean2
+        elif g1.upper() == "GPU" and g2.upper() == "CPU":
+            speed_ratio = mean2 / mean1
+        else:
+            speed_ratio = None
+
+        if speed_ratio is not None:
+            label = f"{stars} ({speed_ratio:.2f}x)"
+        else:
+            label = stars
+
         x1 = order.index(g1)
         x2 = order.index(g2)
 
@@ -73,7 +90,7 @@ def add_significance(ax, data, x_col, y_col, order, pairs, alternative="two-side
         ax.text(
             (x1 + x2) / 2,
             current_y + height,
-            stars,
+            label,
             ha="center",
             va="bottom",
             fontsize=14,
@@ -147,6 +164,7 @@ for pu, vals in times.items():
                 "time_hours": seconds / 3600,
 
                 "time_per_iter": seconds_per_iter,
+                "time_per_iter_ms": seconds_per_iter * 1000,
 
                 "niter": niter,
             }
@@ -165,11 +183,17 @@ order = [x for x in order if x in df["processing_unit"].unique()]
 
 fig, ax = plt.subplots(figsize=(7, 6))
 
+palette = {
+    "CPU": "#4C72B0",   # blue
+    "GPU": "#55A868",   # green
+}
+
 sns.barplot(
     data=df,
     x="processing_unit",
-    y="time_per_iter",
+    y="time_per_iter_ms",
     order=order,
+    palette=palette,
     errorbar="sd",
     capsize=0.15,
     width=0.6,
@@ -181,10 +205,10 @@ sns.barplot(
 sns.stripplot(
     data=df,
     x="processing_unit",
-    y="time_per_iter",
+    y="time_per_iter_ms",
     order=order,
     color="black",
-    alpha=0.7,
+    alpha=0.65,
     size=7,
     jitter=0.12,
     ax=ax,
@@ -195,14 +219,14 @@ if len(order) == 2:
         ax=ax,
         data=df,
         x_col="processing_unit",
-        y_col="time_per_iter",
+        y_col="time_per_iter_ms",
         order=order,
         pairs=[("CPU", "GPU")],
-        alternative="two-sided",
+        alternative="greater",
     )
 
 ax.set_xlabel("")
-ax.set_ylabel("Seconds per iteration")
+ax.set_ylabel("Time per iteration (ms)")
 
 sns.despine(ax=ax)
 plt.tight_layout()

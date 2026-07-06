@@ -57,3 +57,21 @@ write.csv(W, paste0(output_path, "signatures.csv"))
 write.csv(HC, paste0(output_path, "SNMF_proportions.csv"))
 
 write(output$niter, file=paste0(output_path, "niter.txt"))
+
+if (loss_func == "KL_NB") {
+    phi <- as.matrix(output$phi)
+
+    rownames(phi) <- rownames(counts)
+    colnames(phi) <- colnames(counts)
+
+    write.csv(phi, paste0(output_path, "phi.csv"))
+
+    alpha <- matrix(output$alpha, nrow = 1)
+    beta <- matrix(output$beta, nrow = 1)
+
+    colnames(alpha) <- rownames(counts)
+    colnames(beta) <- colnames(counts)
+
+    write.csv(alpha, paste0(output_path, "alpha.csv"))
+    write.csv(beta, paste0(output_path, "beta.csv"))
+}

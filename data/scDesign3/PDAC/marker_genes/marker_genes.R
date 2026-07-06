@@ -22,6 +22,8 @@ all_markers <- FindAllMarkers(
   logfc.threshold = 0.25   # minimum log2 fold-change
 )
 
+write.csv(sig_markers, "./marker_genes_full.csv", row.names = FALSE)
+
 sig_markers <- all_markers %>% filter(p_val_adj < 0.05)
 
 # convert to list by cluster
