@@ -3,8 +3,9 @@ args <- commandArgs(trailingOnly = TRUE)
 if(length(args) == 0) stop("Please provide the data directory path")
 output_path <- args[1]
 loss_func <- args[2]
-k <- as.integer(args[3])
-seed <- as.integer(args[4])
+dispersion_mode <- args[3]
+k <- as.integer(args[4])
+seed <- as.integer(args[5])
 
 library(GPUmatrix)
 library(torch)
@@ -28,7 +29,7 @@ S <- gpu.matrix(S, dtype = "float32")
 set.seed(seed)
 
 output <- snmf(gpu_counts, S = S, k = k,
-                      niter = 2000, tol = 1e-4, num_initializations=10)
+                      niter = 2000, tol = 1e-4, num_initializations=10, dispersion_mode=dispersion_mode)
 
 W <- as.matrix(output$W)
 H <- as.matrix(output$H)

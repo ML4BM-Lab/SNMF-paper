@@ -1,5 +1,5 @@
 snmf <- function (V, S = diag(ncol(V)), k = 10, Winit = NULL, Hinit = NULL, tol = 1e-03, 
-                         niter = 100, num_initializations=10) 
+                         niter = 100, num_initializations=10, dispersion_mode=NULL) 
 {
   dtype = "float32" # Define the data type for GPU matrices
 

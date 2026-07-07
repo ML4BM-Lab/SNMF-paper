@@ -17,8 +17,11 @@ snmf <- function(
   tol = 1e-03,
   Rupdate_iter = 20,
   niter = 100,
-  num_initializations = 10
+  num_initializations = 10,
+  dispersion_mode = c("full", "gene", "spot")
 ) {
+
+  dispersion_mode <- match.arg(dispersion_mode)
 
   dtype <- "float32"
 
@@ -165,7 +168,7 @@ snmf <- function(
       WHS <- Winit %*% Hinit %*% S
       WHS <- safe_pmax(WHS, R$eps)
 
-      R <- updateR(V, Winit, Hinit, S, WHS, R)
+      R <- updateR(V, Winit, Hinit, S, WHS, R, mode = dispersion_mode)
     }
 
     if (iter %% 100 == 0) {
@@ -250,7 +253,12 @@ updateH <- function(V, W, H, S, WHS, R) {
   return(H.new)
 }
 
-updateR <- function(V, W, H, S, WHS, R) {
+updateR <- function(
+  V, W, H, S, WHS, R,
+  mode = c("full", "gene", "spot")
+) {
+
+  mode <- match.arg(mode)
 
   eps <- if (!is.null(R$eps)) R$eps else 1e-10
   phi.min <- if (!is.null(R$phi.min)) R$phi.min else 1e-8
@@ -262,49 +270,84 @@ updateR <- function(V, W, H, S, WHS, R) {
 
   WHS <- safe_pmax(WHS, eps)
 
-  if (is.null(R$alpha)) {
-    R$alpha <- rep(0, m)
-  }
-
-  if (is.null(R$beta)) {
-    R$beta <- rep(0, n)
-  }
-
-  alpha <- R$alpha
-  beta  <- R$beta
-
+  # Moment target:
+  # Var(V_ij) = mu_ij + phi_ij * mu_ij^2
   D <- (V - WHS)^2 - WHS
   C <- WHS^2
 
-  for (iter in seq_len(inner.iter)) {
+  if (mode == "gene") {
 
-    alpha <- (
-      rowSums(D) -
-      rowSums(C * matrix(beta, nrow = m, ncol = n, byrow = TRUE))
-    ) / safe_pmax(rowSums(C), eps)
+    alpha <- rowSums(D) / safe_pmax(rowSums(C), eps)
+    alpha <- pmin(safe_pmax(alpha, phi.min), phi.max)
 
-    beta <- (
-      colSums(D) -
-      colSums(C * matrix(alpha, nrow = m, ncol = n, byrow = FALSE))
-    ) / safe_pmax(colSums(C), eps)
+    Phi <- matrix(alpha, nrow = m, ncol = n, byrow = FALSE)
 
-    # Identifiability constraint: mean(beta) = 0
-    beta.mean <- mean(beta)
+    R$alpha <- alpha
+    R$beta  <- rep(0, n)
+    R$phi   <- Phi
+    R$theta <- 1 / Phi
 
-    beta  <- beta - beta.mean
-    alpha <- alpha + beta.mean
+    return(R)
   }
 
-  Phi <- outer(alpha, beta, "+")
+  if (mode == "spot") {
 
-  Phi <- pmin(safe_pmax(Phi, phi.min), phi.max)
+    beta <- colSums(D) / safe_pmax(colSums(C), eps)
+    beta <- pmin(safe_pmax(beta, phi.min), phi.max)
 
-  R$alpha <- alpha
-  R$beta  <- beta
-  R$phi   <- Phi
-  R$theta <- 1 / Phi
+    Phi <- matrix(beta, nrow = m, ncol = n, byrow = TRUE)
 
-  return(R)
+    R$alpha <- rep(0, m)
+    R$beta  <- beta
+    R$phi   <- Phi
+    R$theta <- 1 / Phi
+
+    return(R)
+  }
+
+  if (mode == "full") {
+
+    if (is.null(R$alpha)) {
+      R$alpha <- rep(0, m)
+    }
+
+    if (is.null(R$beta)) {
+      R$beta <- rep(0, n)
+    }
+
+    alpha <- R$alpha
+    beta  <- R$beta
+
+    for (iter in seq_len(inner.iter)) {
+
+      alpha <- (
+        rowSums(D) -
+        rowSums(C * matrix(beta, nrow = m, ncol = n, byrow = TRUE))
+      ) / safe_pmax(rowSums(C), eps)
+
+      beta <- (
+        colSums(D) -
+        colSums(C * matrix(alpha, nrow = m, ncol = n, byrow = FALSE))
+      ) / safe_pmax(colSums(C), eps)
+
+      # Identifiability constraint: mean(beta) = 0
+      beta.mean <- mean(beta)
+
+      beta  <- beta - beta.mean
+      alpha <- alpha + beta.mean
+    }
+
+    Phi <- outer(alpha, beta, "+")
+
+    Phi <- pmin(safe_pmax(Phi, phi.min), phi.max)
+
+    R$alpha <- alpha
+    R$beta  <- beta
+    R$phi   <- Phi
+    R$theta <- 1 / Phi
+
+    return(R)
+  }
 }
 
 # Function to handle potential negative values very close to zero, setting them to zero

@@ -94,7 +94,8 @@ sleep 10
       "KL_NB" \
       $K \
       "$PROPORTIONS_PATH" \
-      $SEED
+      $SEED \
+      "full"
 ) > "$OUTPUT_PATH/logs/SNMF.log" 2>&1 &
 
 sleep 10
@@ -110,7 +111,8 @@ sleep 10
       "KL_NB" \
       $K \
       "$PROPORTIONS_PATH" \
-      $SEED
+      $SEED \
+      "full"
 ) > "$OUTPUT_PATH/logs/NMF.log" 2>&1 &
 
 sleep 10

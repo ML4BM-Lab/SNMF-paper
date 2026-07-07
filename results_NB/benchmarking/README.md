@@ -28,3 +28,5 @@ nohup bash /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/benchmarking/be
     --snmf_tau=0.9 \
     --starfysh_lr=1e-6 \
     & > /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/benchmarking/Xenium.log
+
+python /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/benchmarking/friedman_nemenyi/friedman_nemenyi.py /scratch/lalonsoeste/PhD/NMF_deconvolution/results_NB/benchmarking

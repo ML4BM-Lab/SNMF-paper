@@ -34,6 +34,11 @@ if [ -z "$SEED" ]; then
     exit 1
 fi
 
+DISPERSION_MODE=$8
+if [ -z "$DISPERSION_MODE" ]; then
+    DISPERSION_MODE="full"
+fi
+
 # Load R
 module purge
 module load R/4.4.1-gfbf-2023a
@@ -58,7 +63,7 @@ while true; do
 done
 
 echo "Deconvolution started..."
-jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $LOSS_FUNC $K $SEED)
+jid2=$(sbatch --parsable --wait ./SNMF.slurm $OUTPUT_PATH $LOSS_FUNC $DISPERSION_MODE $K $SEED)
 echo "Deconvolution finished!"
 
 if [ ! -z "$PROPORTIONS_PATH" ]; then
