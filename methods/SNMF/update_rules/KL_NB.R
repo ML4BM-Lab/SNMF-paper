@@ -350,13 +350,6 @@ updateR <- function(
   }
 }
 
-# Function to handle potential negative values very close to zero, setting them to zero
-# Note: This function is not currently called in NMFKLMixing, but could be used for numerical stability.
-setNegativeZero <- function (x) {
-  x[x < 0 & x > -1e-10] <- 0 # Set values between -1e-10 and 0 to 0
-  return(x)
-}
-
 # Function to control and validate the dimensions of input matrices for NMF
 controlDimensionNMF <- function (W, H, V, k) {
   if (ncol(W) != k) {

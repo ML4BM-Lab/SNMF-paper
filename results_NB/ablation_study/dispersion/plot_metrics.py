@@ -98,9 +98,9 @@ ssims = {}
 fit_metrics = {}
 
 name_dict = {
-    "spot": r"$\phi = \beta$",
-    "gene": r"$\phi = \alpha$",
-    "full": r"$\phi = \alpha + \beta$"
+    "spot": r"$\phi_{ij} = \beta_j$",
+    "gene": r"$\phi_{ij} = \alpha_i$",
+    "full": r"$\phi_{ij} = \alpha_i + \beta_j$"
 }
 
 def nb_loglikelihood(X, Mu, Phi, eps=1e-10):
@@ -538,6 +538,11 @@ if len(fit_metrics) > 0:
             palette=palette,
             order=order
         )
+
+        vals = df["score"].values
+        margin = 0.15 * (vals.max() - vals.min())  # 15% padding
+        ax.set_ylim(vals.min() - margin,
+                    vals.max() + margin)
 
         ax.set_xlabel("")
         ax.set_ylabel(ylabel)
