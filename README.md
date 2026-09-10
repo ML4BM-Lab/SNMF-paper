@@ -168,14 +168,26 @@ bash experiments/ablation/gene_count/run.sh \
   data/HLC/final/HLC_proportions.csv
 ```
 
-### Runtime comparison (Supp. Figure  in the paper)
+### Runtime comparison (Supp. Figure 5 in the paper)
 
 ```bash
 bash experiments/runtime/run.sh \
   data/TNBC/final/TNBC_counts_hvgs5000.csv \
-  experiments/runtime/outputs/results/TNBC \
+  experiments/runtime/outputs/TNBC \
   5 \
   data/TNBC/final/TNBC_proportions.csv
+
+bash experiments/runtime/run.sh \
+  data/PDAC/final/PDAC_counts.csv \
+  experiments/runtime/outputs/PDAC \
+  20 \
+  data/PDAC/final/PDAC_proportions.csv
+
+bash experiments/runtime/run.sh \
+  data/HLC/final/HLC_counts.csv \
+  experiments/runtime/outputs/HLC \
+  7 \
+  data/HLC/final/HLC_proportions.csv
 ```
 
 ### Melanoma biological validation (Figure 2 and Supp. Figures 12-19 in the paper)
