@@ -1,34 +1,52 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+repo_abs_path() {
+  case "$1" in
+    /*) printf "%s\n" "$1" ;;
+    *) printf "%s/%s\n" "$REPO_ROOT" "$1" ;;
+  esac
+}
 
 echo "[4] Starfysh"
 
-DATA_PATH=$1
+DATA_PATH="${1:-}"
 if [ -z "$DATA_PATH" ]; then
     exit 1
 fi
 
-MARKERS_PATH=$2
+MARKERS_PATH="${2:-}"
 if [ -z "$MARKERS_PATH" ]; then
     exit 1
 fi
 
-OUTPUT_PATH=$3
+OUTPUT_PATH="${3:-}"
 if [ -z "$OUTPUT_PATH" ]; then
     exit 1
 fi
 
-LEARNING_RATE=$4
+LEARNING_RATE="${4:-}"
 if [ -z "$LEARNING_RATE" ]; then
     exit 1
 fi
 
-SEED=$5
+SEED="${5:-}"
 if [ -z "$SEED" ]; then
     exit 1
 fi
 
+DATA_PATH="$(repo_abs_path "$DATA_PATH")"
+MARKERS_PATH="$(repo_abs_path "$MARKERS_PATH")"
+OUTPUT_PATH="$(repo_abs_path "$OUTPUT_PATH")"
+
+cd "$SCRIPT_DIR"
+mkdir -p "$SCRIPT_DIR/logs"
+
 # Make temporary folder
-mkdir $OUTPUT_PATH/tmp
+mkdir -p "$OUTPUT_PATH/tmp"
 
 echo "Loading data..."
 jid1=$(sbatch --parsable --wait ./load_data.slurm $DATA_PATH $MARKERS_PATH $OUTPUT_PATH)

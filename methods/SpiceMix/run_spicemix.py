@@ -15,7 +15,8 @@ output_path = Path(sys.argv[1])
 niter = int(sys.argv[2])
 seed = int(sys.argv[3])
 
-sys.path.append("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SpiceMix/repo/SpiceMix")
+SPICEMIX_REPO = Path(__file__).resolve().parent / "repo" / "SpiceMix"
+sys.path.append(str(SPICEMIX_REPO))
 with open(output_path / "tmp" / "spicemix_obj.pickle", 'rb') as handle:
     obj = pickle.load(handle)
 

@@ -8,6 +8,9 @@
 #SBATCH --constraint=rtx3090
 #SBATCH --time=01:00:00
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
 OUTPUT_PATH=$1
 if [ -z "$OUTPUT_PATH" ]; then
     exit 1
@@ -19,8 +22,9 @@ if [ -z "$SEED" ]; then
 fi
 
 # Load environment
-source /scratch/lalonsoeste/PhD/NMF_deconvolution/.venv/bin/activate
+if [ -d "$REPO_ROOT/.venv" ]; then
+    source "$REPO_ROOT/.venv/bin/activate"
+fi
 
 # Run the R script
 python ./run_ucdeconvolve.py $OUTPUT_PATH $SEED
-

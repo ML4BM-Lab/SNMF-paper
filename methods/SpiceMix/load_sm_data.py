@@ -5,7 +5,8 @@ import torch
 torch.set_num_threads(16)
 
 import sys
-sys.path.append("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SpiceMix/repo/SpiceMix")
+SPICEMIX_REPO = Path(__file__).resolve().parent / "repo" / "SpiceMix"
+sys.path.append(str(SPICEMIX_REPO))
 from model import SpiceMix
 
 import pandas as pd

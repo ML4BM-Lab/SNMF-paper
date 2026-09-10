@@ -7,6 +7,13 @@ dispersion_mode <- args[3]
 k <- as.integer(args[4])
 seed <- as.integer(args[5])
 
+script_arg <- grep("--file=", commandArgs(FALSE), value = TRUE)
+script_dir <- if (length(script_arg) > 0) {
+    dirname(normalizePath(sub("--file=", "", script_arg[1])))
+} else {
+    getwd()
+}
+
 library(GPUmatrix)
 library(torch)
 
@@ -14,11 +21,11 @@ load(paste0(output_path, "tmp/data.RData"))
 load(paste0(output_path, "tmp/S.RData"))
 
 if (loss_func == "KL_poisson") {
-    source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/update_rules/KL_poisson.R")
+    source(file.path(script_dir, "update_rules", "KL_poisson.R"))
 } else if (loss_func == "squared_error") {
-    source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/update_rules/squared_error.R")
+    source(file.path(script_dir, "update_rules", "squared_error.R"))
 } else if (loss_func == "KL_NB") {
-    source("/scratch/lalonsoeste/PhD/NMF_deconvolution/methods/SNMF/update_rules/KL_NB.R")
+    source(file.path(script_dir, "update_rules", "KL_NB.R"))
 } else {
     stop("Loss function selected not supported.")
 }

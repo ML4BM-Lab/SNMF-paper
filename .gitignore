@@ -1,5 +1,7 @@
 .venv
 **/tmp/
+experiments/**/outputs/
+data/**/derived/
 
 *.sif
 
@@ -32,6 +34,7 @@ repo
 
 __pycache__
 .ipynb_checkpoints
+*.ipynb_checkpoints
 
 NMF_*
 
