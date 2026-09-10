@@ -13,7 +13,7 @@ The `SNMF/` submodule contains the R package implementation. The remaining folde
 - `SNMF/`: SNMF R package submodule.
 - `methods/`: wrappers for SNMF and benchmarked methods.
 - `experiments/`: runnable experiment workflows and README files.
-- `data/`: final Zenodo-style data mirror plus preparation scripts.
+- `data/`: data preparation scripts. 
 - `assets/`: manuscript figures used in documentation.
 
 Large data files, generated plots, logs, and experiment outputs are ignored by Git. Download the Zenodo archive into each dataset's `final/` folder. DLPFC final files can also be generated from raw per-sample folders with `data/DLPFC/process_data.py`.
@@ -34,7 +34,7 @@ Expected local paths are documented in [data/README.md](data/README.md). The mai
 
 ## Environment
 
-The manuscript experiments were run on a SLURM-managed HPC cluster with R 4.4.1, Python 3.9, Apptainer, and NVIDIA RTX 3090 GPU nodes for GPU benchmarks. Install Python dependencies with:
+The manuscript experiments were run on a SLURM-managed HPC cluster with **R 4.4.1**, **Python 3.9**, Apptainer, and NVIDIA RTX 3090 GPU nodes for GPU benchmarks. Install Python dependencies with:
 
 ```bash
 python3 -m venv .venv
@@ -56,7 +56,9 @@ install.packages("RcppHungarian")
 
 ## Reproducing Experiments
 
-Benchmark TNBC:
+### Benchmarks
+
+Benchmark TNBC (**Figure 1A-E** in the paper):
 
 ```bash
 bash experiments/benchmarking/run_benchmark.sh \
@@ -68,29 +70,115 @@ bash experiments/benchmarking/run_benchmark.sh \
   --hungarian=true
 ```
 
-Benchmark all DLPFC samples:
+Benchmark all DLPFC samples (**Figure 1F** and **Supp. Figure 11** in the paper):
 
 ```bash
 bash experiments/benchmarking/dlpfc/run.sh
 ```
 
-Ablation studies:
+Benchmark PDAC (**Supp. Figures 6 and 8-9** in the paper):
 
 ```bash
-bash experiments/ablation/loss_function/run.sh data/TNBC/final/TNBC_counts_hvgs5000.csv experiments/ablation/loss_function/outputs/TNBC 5 data/TNBC/final/TNBC_proportions.csv
-bash experiments/ablation/tau/run.sh data/TNBC/final/TNBC_counts_hvgs5000.csv experiments/ablation/tau/outputs/TNBC 5 data/TNBC/final/TNBC_proportions.csv
-bash experiments/ablation/dispersion/run.sh data/TNBC/final/TNBC_counts_hvgs5000.csv experiments/ablation/dispersion/outputs/TNBC 5 data/TNBC/final/TNBC_proportions.csv
-bash experiments/ablation/gene_count/run.sh data/TNBC/final/TNBC_counts.csv data/TNBC/final/TNBC_marker_genes.csv 0.8 experiments/ablation/gene_count/outputs/TNBC 5 data/TNBC/final/TNBC_proportions.csv
-bash experiments/ablation/sequencing_depth/run.sh data/TNBC/final/TNBC_counts_hvgs5000.csv 0.8 experiments/ablation/sequencing_depth/outputs/TNBC 5 data/TNBC/final/TNBC_proportions.csv
+bash experiments/benchmarking/run_benchmark.sh \
+  --data_path=data/TNBC/final/TNBC_counts_hvgs5000.csv \
+  --markers_path=data/TNBC/final/TNBC_marker_genes.csv \
+  --output_path=experiments/benchmarking/outputs/TNBC \
+  --k=5 \
+  --proportions_path=data/TNBC/final/TNBC_proportions.csv \
+  --hungarian=true
 ```
 
-Runtime comparison:
+Benchmark HLC (**Supp. Figures 7 and 10** in the paper):
 
 ```bash
-bash experiments/runtime/run.sh data/TNBC/final/TNBC_counts_hvgs5000.csv experiments/runtime/outputs/results/TNBC 5 data/TNBC/final/TNBC_proportions.csv
+bash experiments/benchmarking/run_benchmark.sh \
+  --data_path=data/TNBC/final/TNBC_counts_hvgs5000.csv \
+  --markers_path=data/TNBC/final/TNBC_marker_genes.csv \
+  --output_path=experiments/benchmarking/outputs/TNBC \
+  --k=5 \
+  --proportions_path=data/TNBC/final/TNBC_proportions.csv \
+  --hungarian=true
 ```
 
-Melanoma biological validation:
+### Ablation studies
+
+Effect of the spatial mixing matrix $\mathbf{S}$ on deconvolution accuracy: performance across different values of $\tau$ (**Supp. Figure 1** in the paper):
+
+```bash
+bash experiments/ablation/tau/run.sh \
+  data/TNBC/final/TNBC_counts_hvgs5000.csv \
+  experiments/ablation/tau/outputs/TNBC \
+  5 \
+  data/TNBC/final/TNBC_proportions.csv
+
+bash experiments/ablation/tau/run.sh \
+  data/PDAC/final/PDAC_counts.csv \
+  experiments/ablation/tau/outputs/PDAC \
+  20 \
+  data/PDAC/final/PDAC_proportions.csv
+
+bash experiments/ablation/tau/run.sh \
+  data/HLC/final/HLC_counts.csv \
+  experiments/ablation/tau/outputs/HLC \
+  7 \
+  data/HLC/final/HLC_proportions.csv
+```
+
+Effect of the loss function to optimize $\mathcal{L}$ on deconvolution accuracy: performance for spot-wise *Frobenius norm*, *Poisson Kullback-Leibler divergence* and *Negative Binomial negative log-likelihood* as optimization alternatives (**Supp. Figure 2** in the paper):
+
+```bash
+bash experiments/ablation/loss_function/run.sh \
+  data/TNBC/final/TNBC_counts_hvgs5000.csv \
+  experiments/ablation/loss_function/outputs/TNBC \
+  5 \
+  data/TNBC/final/TNBC_proportions.csv
+
+bash experiments/ablation/loss_function/run.sh \
+  data/PDAC/final/PDAC_counts.csv \
+  experiments/ablation/loss_function/outputs/PDAC \
+  20 \
+  data/PDAC/final/PDAC_proportions.csv
+
+bash experiments/ablation/loss_function/run.sh \
+  data/HLC/final/HLC_counts.csv \
+  experiments/ablation/loss_function/outputs/HLC \
+  7 \
+  data/HLC/final/HLC_proportions.csv
+```
+
+Effect of the number of *highly variable genes (HVGs)* on deconvolution accuracy for the TNBC dataset (**Supp. Figure 3** in the paper):
+
+```bash
+bash experiments/ablation/gene_count/run.sh \
+  data/TNBC/final/TNBC_counts_hvgs5000.csv \
+  experiments/ablation/gene_count/outputs/TNBC \
+  5 \
+  data/TNBC/final/TNBC_proportions.csv
+
+bash experiments/ablation/gene_count/run.sh \
+  data/PDAC/final/PDAC_counts.csv \
+  experiments/ablation/gene_count/outputs/PDAC \
+  20 \
+  data/PDAC/final/PDAC_proportions.csv
+
+bash experiments/ablation/gene_count/run.sh \
+  data/HLC/final/HLC_counts.csv \
+  experiments/ablation/gene_count/outputs/HLC \
+  7 \
+  data/HLC/final/HLC_proportions.csv
+```
+
+### Runtime comparison (Supp. Figure  in the paper)
+
+```bash
+bash experiments/runtime/run.sh \
+  data/TNBC/final/TNBC_counts_hvgs5000.csv \
+  experiments/runtime/outputs/results/TNBC \
+  5 \
+  data/TNBC/final/TNBC_proportions.csv
+```
+
+### Melanoma biological validation (Figure 2 and Supp. Figures 12-19 in the paper)
 
 ```bash
 bash methods/SNMF/run.sh \

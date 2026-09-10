@@ -47,7 +47,7 @@ MARKERS_PATH="$(repo_abs_path "$MARKERS_PATH")"
 OUTPUT_PATH="$(repo_abs_path "$OUTPUT_PATH")"
 PROPORTIONS_PATH="$(repo_abs_path "$PROPORTIONS_PATH")"
 
-ngenes=(100 200 400 800 1600 3200 6400 12800 25600)
+ngenes=(100 200 400 800 1600 3200 6400)
 
 mkdir -p "$OUTPUT_PATH/tmp"
 mkdir -p "$OUTPUT_PATH/logs"

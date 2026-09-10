@@ -6,7 +6,7 @@ This directory separates final experiment inputs from dataset-preparation materi
 - `data/{dataset}/scripts/`: dataset-preparation scripts when applicable.
 - Other dataset-specific folders contain source files and generated intermediate outputs.
 
-Large data files are ignored by Git. Populate each `final/` folder from the Zenodo archive before running experiments.
+Large data files are ignored by Git. Populate each `final/` folder from the [Zenodo](<https://doi.org/10.5281/zenodo.18852117>) archive before running experiments
 
 Zenodo filename prefixes are preserved in each final dataset folder:
 
