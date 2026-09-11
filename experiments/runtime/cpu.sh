@@ -23,7 +23,7 @@ fi
 
 LOSS_FUNC="${4:-}"
 if [ -z "$LOSS_FUNC" ]; then
-    LOSS_FUNC="KL_NB"
+    LOSS_FUNC="NB"
 fi
 
 K="${5:-}"

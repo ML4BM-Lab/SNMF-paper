@@ -20,12 +20,12 @@ library(torch)
 load(paste0(output_path, "tmp/data.RData"))
 load(paste0(output_path, "tmp/S.RData"))
 
-if (loss_func == "KL_poisson") {
-    source(file.path(script_dir, "update_rules", "KL_poisson.R"))
-} else if (loss_func == "squared_error") {
-    source(file.path(script_dir, "update_rules", "squared_error.R"))
-} else if (loss_func == "KL_NB") {
-    source(file.path(script_dir, "update_rules", "KL_NB.R"))
+if (loss_func == "Poisson") {
+    source(file.path(script_dir, "update_rules", "Poisson.R"))
+} else if (loss_func == "frobenius") {
+    source(file.path(script_dir, "update_rules", "frobenius.R"))
+} else if (loss_func == "NB") {
+    source(file.path(script_dir, "update_rules", "NB.R"))
 } else {
     stop("Loss function selected not supported.")
 }
@@ -66,7 +66,7 @@ write.csv(HC, paste0(output_path, "SNMF_proportions.csv"))
 
 write(output$niter, file=paste0(output_path, "niter.txt"))
 
-if (loss_func == "KL_NB") {
+if (loss_func == "NB") {
     phi <- as.matrix(output$phi)
 
     rownames(phi) <- rownames(counts)

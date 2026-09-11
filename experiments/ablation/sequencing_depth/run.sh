@@ -67,7 +67,7 @@ do
         "$OUTPUT_PATH/tmp/v$val.csv" \
         "$OUTPUT_PATH/v$val/" \
         "$SNMF_TAU" \
-        "KL_NB" \
+        "NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "42"

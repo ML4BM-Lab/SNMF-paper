@@ -111,7 +111,7 @@ sleep 10
       "$DATA_PATH" \
       "$OUTPUT_PATH/SNMF/" \
       "$SNMF_TAU" \
-      "KL_NB" \
+      "NB" \
       $K \
       "$PROPORTIONS_PATH" \
       $SEED \
@@ -128,7 +128,7 @@ sleep 10
       "$DATA_PATH" \
       "$OUTPUT_PATH/NMF/" \
       1 \
-      "KL_NB" \
+      "NB" \
       $K \
       "$PROPORTIONS_PATH" \
       $SEED \

@@ -48,7 +48,7 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/cpu/$seed/" \
         "0.4" \
-        "KL_NB" \
+        "NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "$seed"
@@ -63,7 +63,7 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/gpu/$seed/" \
         "0.4" \
-        "KL_NB" \
+        "NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "$seed"

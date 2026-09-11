@@ -197,7 +197,7 @@ bash methods/SNMF/run.sh \
   data/Melanoma/final/ST_mel1_rep2_counts.csv \
   experiments/melanoma/outputs/K4/ \
   0.5 \
-  KL_NB \
+  NB \
   4 \
   "" \
   42 \

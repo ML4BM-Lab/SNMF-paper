@@ -49,7 +49,7 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/$mode/" \
         "0.8" \
-        "KL_NB" \
+        "NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "42" \

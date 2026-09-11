@@ -36,7 +36,7 @@ DATA_PATH="$(repo_abs_path "$DATA_PATH")"
 OUTPUT_PATH="$(repo_abs_path "$OUTPUT_PATH")"
 PROPORTIONS_PATH="$(repo_abs_path "$PROPORTIONS_PATH")"
 
-loss_functions=(squared_error KL_poisson KL_NB)
+loss_functions=(frobenius Poisson NB)
 
 mkdir -p "$OUTPUT_PATH/logs/"
 

@@ -15,7 +15,7 @@ fi
 
 LOSS_FUNC=$2
 if [ -z "$LOSS_FUNC" ]; then
-    LOSS_FUNC="KL_poisson"
+    LOSS_FUNC="NB"
 fi
 
 DISPERSION_MODE=$3

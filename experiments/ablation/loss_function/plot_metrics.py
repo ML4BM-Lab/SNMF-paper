@@ -93,9 +93,9 @@ pccs = {}
 ssims = {}
 
 name_dict = {
-    "squared_error": "Frobenius",
-    "KL_poisson": "KL poisson",
-    "KL_NB": "NB log-likelihood (SNMF)"
+    "frobenius": "Frobenius norm",
+    "Poisson": "Poisson KL",
+    "NB": "NB log-likelihood (SNMF)"
 }
 
 for dirpath, subdirs, files in os.walk(results_path):
@@ -196,9 +196,9 @@ ssim_df = pd.DataFrame(
 # ---------- FIXED ORDER ----------
 order = [
     name_dict.get(i) for i in [
-        "squared_error",
-        "KL_poisson",
-        "KL_NB"
+        "frobenius",
+        "Poisson",
+        "NB"
     ]
 ]
 
@@ -209,7 +209,7 @@ palette = dict(zip(
 ))
 
 # pairwise comparisons for significance, using Negative Binomial as reference
-reference_value = name_dict.get("KL_NB")
+reference_value = name_dict.get("NB")
 if reference_value not in order:
     raise ValueError(
         f"Reference loss function '{reference_value}' was not found in results: "

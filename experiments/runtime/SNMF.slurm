@@ -17,7 +17,7 @@ fi
 
 LOSS_FUNC=$2
 if [ -z "$LOSS_FUNC" ]; then
-    LOSS_FUNC="KL_NB"
+    LOSS_FUNC="NB"
 fi
 
 K=$3

@@ -49,7 +49,7 @@ do
         "$DATA_PATH" \
         "$OUTPUT_PATH/v$val/" \
         "$val" \
-        "KL_NB" \
+        "NB" \
         "$K" \
         "$PROPORTIONS_PATH" \
         "42"
