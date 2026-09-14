@@ -194,6 +194,20 @@ sleep 10
 
 sleep 10
 
+## FAST
+(
+  cd "$METHODS_DIR/FAST"
+  mkdir -p "$OUTPUT_PATH/FAST/"
+  bash run.sh \
+      "$DATA_PATH" \
+      "$OUTPUT_PATH/FAST/" \
+      $K \
+      $SEED \
+      $PROPORTIONS_PATH
+) > "$OUTPUT_PATH/logs/FAST.log" 2>&1 &
+
+sleep 10
+
 ## SpiceMix
 (
   cd "$METHODS_DIR/SpiceMix"
@@ -228,7 +242,7 @@ mv "$OUTPUT_PATH/NMF/SNMF_proportions.csv" "$OUTPUT_PATH/NMF/NMF_proportions.csv
 # Hungarian annotation
 if [[ "$HUNGARIAN" == "true" ]]; then
   module load R/4.4.1-gfbf-2023a
-  for method in CARD RETROFIT STdeconvolve SMART starfysh BayesTME SpiceMix NMF SNMF; do
+  for method in CARD RETROFIT STdeconvolve SMART starfysh BayesTME SpiceMix NMF SNMF FAST; do
     if [[ -f "$OUTPUT_PATH/$method/${method}_proportions.csv" ]]; then
       echo "Computing hungarian algorithm for $method ..."
       Rscript "$SCRIPTS_DIR/hungarian.R" \

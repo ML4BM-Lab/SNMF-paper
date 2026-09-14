@@ -28,6 +28,7 @@ METHOD_ORDER = [
     "BayesTME",
     "SpiceMix",
     "STdeconvolve",
+    "FAST",
     "RETROFIT",
     "starfysh",
 ]

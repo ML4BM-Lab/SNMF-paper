@@ -17,6 +17,7 @@ METHOD_ORDER = [
     "BayesTME",
     "SpiceMix",
     "STdeconvolve",
+    "FAST",
     "RETROFIT",
     "starfysh",
 ]
@@ -175,8 +176,8 @@ def main():
         print("No CSV files found.")
         sys.exit(0)
 
-    plot_proportions(csv_files)
-    # plot_proportions(csv_files, normalize=True)
+    # plot_proportions(csv_files)
+    plot_proportions(csv_files, normalize=True)
     print("✅ Plots saved in 'plots/' folder.")
 
 
