@@ -17,6 +17,7 @@ METHOD_ORDER = [
     "BayesTME",
     "SpiceMix",
     "STdeconvolve",
+    "FAST",
     "RETROFIT",
     "starfysh",
 ]
@@ -318,7 +319,7 @@ def main():
             file=sys.stderr,
         )
         sys.exit(1)
-
+    
     combined = load_metric_summaries(summary_files)
     methods = ordered_methods(combined)
     combined["_method_order"] = pd.Categorical(

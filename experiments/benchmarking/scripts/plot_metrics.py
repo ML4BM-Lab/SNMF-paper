@@ -48,14 +48,13 @@ ground_truth = None
 folder = None
 hungarian = None
 
-
 # === Helper functions ===
 def get_csv_files():
     global folder, hungarian
     csv_files = []
     for root, _, files in os.walk(folder):
         for f in files:
-            if f.lower().endswith(".csv") and "gene_sig" not in f and (('hungarian' in f) == hungarian):
+            if f.lower().endswith(".csv") and "sig" not in f and (('hungarian' in f) == hungarian):
                 csv_files.append(os.path.join(root, f))
     return csv_files
 
@@ -413,14 +412,12 @@ def main():
 
     folder = sys.argv[1]
     ground_truth = pd.read_csv(sys.argv[2], index_col=0)
-    print(ground_truth.columns)
     hungarian = sys.argv[3].lower() == "true"
 
     csv_files = get_csv_files()
     if not csv_files:
         print("No CSV files found.")
         sys.exit(0)
-
 
     metrics = {}
     for fpath in csv_files:

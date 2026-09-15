@@ -58,14 +58,14 @@ do
   mkdir -p "$OUTPUT_PATH/v$val"
 
   echo "Subsampling genes..."
-  (
-    cd "$SCRIPT_DIR"
-    sbatch --parsable --wait ./subsample_data.slurm \
-      "$DATA_PATH" \
-      "$MARKERS_PATH" \
-      "$val" \
-      "$OUTPUT_PATH"
-  )
+
+  cd "$SCRIPT_DIR"
+  sbatch --parsable --wait ./subsample_data.slurm \
+    "$DATA_PATH" \
+    "$MARKERS_PATH" \
+    "$val" \
+    "$OUTPUT_PATH"
+
   echo "Genes subsampled!"
 
   (
@@ -77,9 +77,9 @@ do
         --proportions_path="$PROPORTIONS_PATH" \
         --snmf_tau="$SNMF_TAU" \
         --starfysh_lr=1e-6 \
-  ) > "$OUTPUT_PATH/logs/SNMF_v${val}.log" 2>&1 &
+  ) > "$OUTPUT_PATH/logs/benchmark_v${val}.log" 2>&1 &
 
-  echo "SNMF Launched"
+  echo "Benchmark Launched"
 
   sleep 100
 done
