@@ -6,6 +6,7 @@ output_path <- args[2]
 k <- as.integer(args[3])
 
 X <- read.csv(data_path, row.names=1, check.names=FALSE)
+X <- X[rowSums(X) > 0, , drop = FALSE]
 
 X <- log(X+1)
 X <- X/max(X)
@@ -18,6 +19,19 @@ coords <- do.call(rbind, strsplit(spots, "x"))
 coords <- apply(coords, 2, as.integer)
 
 # Create spots x spots matrix
+distance <- matrix(
+  0,
+  nrow = length(spots),
+  ncol = length(spots),
+  dimnames = list(spots, spots)
+)
+
+for (i in seq_along(spots)) {
+  for (j in seq_along(spots)) {
+    distance[i, j] <- (coords[i,1] - coords[j,1])^2 + (coords[i,2] - coords[j,2])^2
+  }
+}
+
 adj <- matrix(
   0,
   nrow = length(spots),
@@ -25,18 +39,15 @@ adj <- matrix(
   dimnames = list(spots, spots)
 )
 
-# Fill adjacency matrix
 for (i in seq_along(spots)) {
-  for (j in seq_along(spots)) {
-    
-    # Manhattan distance
-    d <- sum(abs(coords[i, ] - coords[j, ]))
-    
-    if (d == 1) {
-      adj[i, j] <- 1
-    }
-  }
+  d <- distance[i, ]
+  nn <- order(d)[seq_len(5)]
+
+  adj[i, nn] <- 1
 }
+
+# Make adj symmetric
+adj <- pmax(adj, t(adj))
 
 config <- list(
     r = k,

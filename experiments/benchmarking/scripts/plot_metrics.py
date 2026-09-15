@@ -125,8 +125,11 @@ def compute_ssim(output):
 
         pred_img = np.zeros((H, W), dtype=float)
         true_img = np.zeros((H, W), dtype=float)
-
-        pred_vals = output[celltype.replace("-", ".").replace("&", ".")].values
+        
+        try:
+            pred_vals = output[celltype.replace("-", ".").replace("&", ".")].values
+        except:
+            pred_vals = output[celltype].values
         true_vals = ground_truth.loc[[f"{r}x{c}" for r,c in zip(rows, cols)], celltype].values
 
         pred_img[rows, cols] = pred_vals
@@ -410,6 +413,7 @@ def main():
 
     folder = sys.argv[1]
     ground_truth = pd.read_csv(sys.argv[2], index_col=0)
+    print(ground_truth.columns)
     hungarian = sys.argv[3].lower() == "true"
 
     csv_files = get_csv_files()

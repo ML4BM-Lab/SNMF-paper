@@ -50,6 +50,7 @@ methods = [
     "BayesTME",
     "SpiceMix",
     "STdeconvolve",
+    "FAST",
     "RETROFIT",
     "starfysh",
 ]

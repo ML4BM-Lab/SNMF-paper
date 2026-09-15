@@ -14,7 +14,7 @@ fi
 
 mkdir -p "$OUTPUT_DIR"
 
-sample_dirs=("$DATA_DIR"/*)
+sample_dirs=("$DATA_DIR"/*/)
 if [[ ${#sample_dirs[@]} -eq 0 || ! -d "${sample_dirs[0]}" ]]; then
     echo "No DLPFC sample directories found in $DATA_DIR"
     exit 1

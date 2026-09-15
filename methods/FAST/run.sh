@@ -34,12 +34,12 @@ if [ -z "$SEED" ]; then
 fi
 
 PROPORTIONS_PATH="${5:-}"
-if [ -z "$PROPORTIONS_PATH" ]; then
-    exit 1
-fi
 
 DATA_PATH="$(repo_abs_path "$DATA_PATH")"
 OUTPUT_PATH="$(repo_abs_path "$OUTPUT_PATH")"
+if [ -n "$PROPORTIONS_PATH" ]; then
+    PROPORTIONS_PATH="$(repo_abs_path "$PROPORTIONS_PATH")"
+fi
 
 cd "$SCRIPT_DIR"
 mkdir -p "$SCRIPT_DIR/logs"
@@ -51,17 +51,40 @@ module load R/4.4.1-gfbf-2023a
 # Make temporary folder
 mkdir -p "$OUTPUT_PATH/tmp"
 
-echo "Loading data..."
-jid1=$(sbatch --parsable --wait ./load_data.slurm $DATA_PATH $OUTPUT_PATH $K)
-echo "Data loaded!"
+MAX_TEST_JOBS=2
+USER_NAME=$(whoami)
 
-echo "Deconvolution started..."
-jid2=$(sbatch --parsable --wait ./FAST.slurm $OUTPUT_PATH $SEED)
-echo "Deconvolution finished!"
+while true; do
+    TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
+    if (( TEST_JOBS < MAX_TEST_JOBS )); then
+      echo "Loading data..."
+      jid1=$(sbatch --parsable --wait ./load_data.slurm  $DATA_PATH $OUTPUT_PATH $K)
+      echo "Data loaded!"
+      break
+    else
+      echo "Max SLURM test QoS jobs reached. Will try again in 30 seconds"
+      sleep 30
+    fi
+done
 
-echo "Annotating cell types..."
-Rscript ./annotate.R $OUTPUT_PATH $PROPORTIONS_PATH
-echo "Annotation finished!"
+while true; do
+    TEST_JOBS=$(squeue -u "$USER_NAME" -h -q test | wc -l)
+    if (( TEST_JOBS < MAX_TEST_JOBS )); then
+      echo "Deconvolution started..."
+      jid2=$(sbatch --parsable --wait ./FAST.slurm $OUTPUT_PATH $SEED)
+      echo "Deconvolution finished!"
+      break
+    else
+      echo "Max SLURM test QoS jobs reached. Will try again in 30 seconds"
+      sleep 30
+    fi
+done
+
+if [ ! -z "$PROPORTIONS_PATH" ]; then
+    echo "Annotating cell types..."
+    Rscript ./annotate.R $OUTPUT_PATH $PROPORTIONS_PATH
+    echo "Annotation finished!"
+fi
 
 sacct -j $jid1 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/preprocessing_sacct.log
 sacct -j $jid2 --format=JobID,JobName,MaxRSS,Elapsed,State > $OUTPUT_PATH/sacct.log

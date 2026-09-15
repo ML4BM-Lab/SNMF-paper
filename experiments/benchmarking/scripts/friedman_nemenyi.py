@@ -961,7 +961,7 @@ def clean_latex_cell(cell):
 
 
 def parse_dlpfc_ari_mean(benchmarking_path):
-    ari_table = benchmarking_path / "DLPFC" / "results" / "ari_table.tex"
+    ari_table = benchmarking_path / "DLPFC" / "ari_table.tex"
     if not ari_table.exists():
         raise FileNotFoundError(f"Missing DLPFC ARI table: {ari_table}")
 

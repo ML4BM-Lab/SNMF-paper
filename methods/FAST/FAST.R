@@ -15,4 +15,6 @@ load(paste0(output_path, "tmp/config.RData"))
 res <- dmain(X, adj, config)
 H <- res$H
 rownames(H) <- colnames(X)
+
+write.csv(H, file=paste0(output_path, "FAST_proportions.csv"))
 save(H, file=paste0(output_path, "tmp/raw_proportions.RData"))
