@@ -156,8 +156,8 @@ def plot_proportions(csv_files, normalize=False):
                     length=3         # shorter ticks (optional)
                 )
 
-    plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.png"), dpi=300, bbox_inches="tight")
-    plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.pdf"), dpi=300, bbox_inches="tight")
+    plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.png"), dpi=150)
+    plt.savefig(os.path.join(folder, "plots", f"proportions{'_norm' if normalize else ''}.pdf"), dpi=150)
     plt.close()
     
 def main():
@@ -176,8 +176,8 @@ def main():
         print("No CSV files found.")
         sys.exit(0)
 
-    # plot_proportions(csv_files)
-    plot_proportions(csv_files, normalize=True)
+    plot_proportions(csv_files)
+    # plot_proportions(csv_files, normalize=True)
     print("✅ Plots saved in 'plots/' folder.")
 
 

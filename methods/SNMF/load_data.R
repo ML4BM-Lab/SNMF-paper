@@ -26,7 +26,8 @@ meanValue <- function(gamma, x, y, tau) {
     return((mean(diag(S))-tau)^2)
 }
 
-gamma <- optim(1, meanValue, method="BFGS", tau=tau, x=x, y=y)$par
+gamma <- optim(par=1, fn=meanValue, method = "L-BFGS-B",
+  lower = 1e-12, tau=tau, x=x, y=y)$par
 
 S <- exp(-gamma * as.matrix(dist(cbind(x,y)))^2)
 S[S < 1e-3] <- 0 
